@@ -1,0 +1,49 @@
+---
+/** Primary navigation. On the home page the links are in-page anchors. */
+interface Props {
+  home?: boolean;
+}
+const { home = false } = Astro.props;
+const path = Astro.url.pathname;
+const links = [
+  { label: 'WORK', href: home ? '#work' : '/projects/', match: '/projects' },
+  { label: 'PRACTICE', href: home ? '#practice' : '/#practice' },
+  { label: 'GARDEN', href: home ? '#garden' : '/garden/', match: '/garden' },
+  { label: 'CONTACT', href: home ? '#contact' : '/#contact' },
+];
+---
+
+<nav aria-label="Primary">
+  <ul>
+    {
+      links.map((link) => (
+        <li>
+          <a href={link.href} aria-current={link.match && path.startsWith(link.match) ? 'page' : undefined}>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  a[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+</style>

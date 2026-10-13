@@ -1,46 +1,18 @@
-# Astro Starter Kit: Basics
+# yebt.dev — Grid Console
 
-```sh
-bun create astro@latest -- --template basics
-```
+Portfolio of Yahir Eduardo Bravo, software architect. Astro 7, static output, no UI framework.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Commands
 
-## 🚀 Project Structure
+| Command           | Action                                  |
+| :---------------- | :-------------------------------------- |
+| `npm install`     | Install dependencies                    |
+| `npm run dev`     | Dev server at `localhost:4321`          |
+| `npm run build`   | Build the static site to `./dist/`      |
+| `npm run preview` | Preview the build                       |
 
-Inside of your Astro project, you'll see the following folders and files:
+## Structure
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
-
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- `src/styles/global.css` — design tokens (dark default, light via `data-theme="light"` or `prefers-color-scheme`).
+- `src/layouts/BaseLayout.astro` — head, no-flash theme script, grain overlay, skip link, header.
+- `src/components/` — presentational components (`Nav`, `ThemeToggle`, `SiteHeader`, ...).

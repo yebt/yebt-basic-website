@@ -1,0 +1,51 @@
+---
+/**
+ * Theme toggle. The visible label is the active theme; the accessible name
+ * keeps that word first (label-in-name) and announces the action.
+ * State lives on <html data-theme>, written by the inline script in BaseLayout.
+ */
+---
+
+<button type="button" class="btn theme-toggle" data-theme-toggle>
+  <span class="when-dark">DARK<span class="sr-only"> theme, switch to light</span></span>
+  <span class="when-light">LIGHT<span class="sr-only"> theme, switch to dark</span></span>
+</button>
+
+<style>
+  .theme-toggle {
+    min-width: 72px;
+  }
+  .when-light {
+    display: none;
+  }
+  :global(:root[data-theme='light']) .when-light {
+    display: inline;
+  }
+  :global(:root[data-theme='light']) .when-dark {
+    display: none;
+  }
+  @media (prefers-color-scheme: light) {
+    :global(:root:not([data-theme])) .when-light {
+      display: inline;
+    }
+    :global(:root:not([data-theme])) .when-dark {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const KEY = 'theme';
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const root = document.documentElement;
+      const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+      root.dataset.theme = next;
+      try {
+        localStorage.setItem(KEY, next);
+      } catch {
+        /* storage unavailable: the choice lasts for this page only */
+      }
+    });
+  });
+</script>

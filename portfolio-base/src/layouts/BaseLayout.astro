@@ -1,0 +1,95 @@
+---
+import '@fontsource/share-tech-mono/400.css';
+import '@fontsource/geist-mono/400.css';
+import '@fontsource/geist-mono/500.css';
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** The home page renders its own header inside the hero grid. */
+  home?: boolean;
+}
+
+const {
+  title = 'Yahir Eduardo Bravo — Software Architect',
+  description = 'Yahir Eduardo Bravo, software architect. Systems that stay clear, tested and easy to change, from the domain model to the interface.',
+  home = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var stored = null;
+        try {
+          stored = localStorage.getItem('theme');
+        } catch (e) {}
+        var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+        root.dataset.theme = stored === 'light' || stored === 'dark' ? stored : mq && mq.matches ? 'light' : 'dark';
+        if (mq && mq.addEventListener) {
+          mq.addEventListener('change', function (event) {
+            var saved = null;
+            try {
+              saved = localStorage.getItem('theme');
+            } catch (e) {}
+            if (!saved) root.dataset.theme = event.matches ? 'light' : 'dark';
+          });
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <!--
+      DIRECTION CONTRACT — Grid Console
+      THESIS: a software architect's portfolio read like a console readout; structure is the ornament.
+      OWN-WORLD: hairline 3x3 grid, mono type (Share Tech Mono display, Geist Mono body), film grain,
+      frosted cells over a portrait that resolves from coarse to fine ASCII.
+      STORY: few large characters become many small ones, the way a system gains detail as it is designed.
+      FIRST VIEWPORT: the grid, a frosted center cell with "I build systems", the name behind a blinking
+      caret, the cells readout and replay.
+      FORM: square hairline borders, no radius, no shadows, uppercase mono labels, ink on near-black or
+      paper, both themes from the same tokens.
+    -->
+    <a class="skip-link" href="#main">Skip to content</a>
+    <svg class="grain" aria-hidden="true" width="100%" height="100%">
+      <filter id="grain">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"></feTurbulence>
+        <feColorMatrix type="saturate" values="0"></feColorMatrix>
+      </filter>
+      <rect width="100%" height="100%" filter="url(#grain)"></rect>
+    </svg>
+    <slot name="background" />
+    <div class="page">
+      {!home && <SiteHeader />}
+      <slot />
+    </div>
+  </body>
+</html>
+
+<style>
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: var(--grain);
+    mix-blend-mode: var(--grain-blend);
+  }
+  .page {
+    position: relative;
+    z-index: 2;
+  }
+</style>

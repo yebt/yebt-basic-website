@@ -1,0 +1,43 @@
+---
+/** Header for inner pages: the hero grid's top row, collapsed to one band. */
+import Nav from './Nav.astro';
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="site-header">
+  <a class="brand" href="/">YEBT.DEV</a>
+  <div class="tools">
+    <Nav />
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 24px;
+    padding: 8px var(--gutter);
+    border-bottom: 1px solid var(--line);
+    background: var(--frost);
+    backdrop-filter: blur(14px) saturate(0.7);
+    -webkit-backdrop-filter: blur(14px) saturate(0.7);
+    font-family: var(--font-display);
+    font-size: 15px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px 22px;
+  }
+</style>
