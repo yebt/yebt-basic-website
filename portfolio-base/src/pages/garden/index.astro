@@ -1,0 +1,89 @@
+---
+import SectionHeader from '../../components/SectionHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getNotes, noteHref } from '../../lib/collections';
+import { groupByStage } from '../../lib/garden';
+
+const notes = await getNotes();
+const groups = groupByStage(notes, (note) => note.data.stage);
+const date = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' });
+---
+
+<BaseLayout title="Garden — Yahir Eduardo Bravo" description="Working notes on architecture, design systems and graphics, grouped by how grown they are.">
+  <main id="main" class="panel">
+    <SectionHeader title="Garden" level="h1" />
+    <p class="lede">Working notes. Seedlings are rough ideas, budding notes are taking shape, evergreen notes are settled.</p>
+    {
+      groups.map((group) => (
+        <section class="group" aria-labelledby={`stage-${group.stage}`}>
+          <h2 id={`stage-${group.stage}`} class="stage">
+            {group.stage} · {group.items.length}
+          </h2>
+          <ul class="notes frost-card">
+            {group.items.map((note) => (
+              <li>
+                <a href={noteHref(note)}>
+                  <span class="note-title">{note.data.title}</span>
+                  <span class="note-meta">
+                    {note.data.tags.map((tag) => tag.toUpperCase()).join(' · ')} ·{' '}
+                    <time datetime={note.data.updated.toISOString()}>{date.format(note.data.updated).toUpperCase()}</time>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .lede {
+    max-width: 62ch;
+    margin: -16px 0 48px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--mute);
+  }
+  .group + .group {
+    margin-top: 48px;
+  }
+  .panel .stage {
+    margin: 0 0 16px;
+    font-size: 15px;
+    color: var(--mute);
+  }
+  .notes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .notes li + li {
+    border-top: 1px solid var(--line);
+  }
+  .notes a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: baseline;
+    padding: 18px 22px;
+  }
+  .note-title {
+    font-size: 16px;
+  }
+  .note-meta {
+    font-size: 12px;
+    color: var(--mute);
+    white-space: nowrap;
+  }
+  @media (max-width: 820px) {
+    .notes a {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .note-meta {
+      white-space: normal;
+    }
+  }
+</style>
