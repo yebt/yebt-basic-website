@@ -1,8 +1,6 @@
 ---
 /**
  * Fixed full-viewport ASCII portrait. Cells resolve 40 -> 6 px.
- * Hooks: any element with [data-ascii-readout] gets "N × M CELLS · XPX";
- * any [data-ascii-replay] button restarts the sequence.
  */
 import { getImage } from 'astro:assets';
 import portrait from '../assets/portrait.jpg';
@@ -39,12 +37,6 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
     let timer: number | undefined;
 
     const isDark = () => document.documentElement.dataset.theme !== 'light';
-
-    const setReadout = (cols: number, rows: number) => {
-      document.querySelectorAll('[data-ascii-readout]').forEach((el) => {
-        el.textContent = `${cols} × ${rows} CELLS · ${cell}PX`;
-      });
-    };
 
     const draw = (size: number) => {
       cell = size;
@@ -108,7 +100,6 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
           ctx.fillText(ch, c * size + size / 2, r * size + size / 2);
         }
       }
-      setReadout(cols, rows);
     };
 
     const play = () => {
@@ -136,8 +127,6 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       attributes: true,
       attributeFilter: ['data-theme'],
     });
-
-    document.querySelectorAll('[data-ascii-replay]').forEach((button) => button.addEventListener('click', play));
 
     img.addEventListener('load', () => {
       const fontReady = document.fonts ? document.fonts.load('10px "Geist Mono"').catch(() => undefined) : Promise.resolve();

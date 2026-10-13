@@ -46,10 +46,7 @@ import ThemeToggle from './ThemeToggle.astro';
   <div class="cell e r bm display">
     <span class="chip">OPEN TO ARCHITECTURE ROLES · {site.location}</span>
   </div>
-  <div class="cell br display">
-    <span class="hide-sm chip" data-ascii-readout aria-hidden="true">— CELLS · 40PX</span>
-    <button type="button" class="btn replay hide-sm" data-ascii-replay>REPLAY<span class="sr-only"> portrait animation</span></button>
-  </div>
+  <div class="cell br"></div>
 </header>
 
 <style>
@@ -150,16 +147,6 @@ import ThemeToggle from './ThemeToggle.astro';
     align-items: center;
     min-height: 44px;
   }
-  .br {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--mute);
-  }
   /* Text sitting directly on the portrait gets a veil so it keeps 4.5:1. */
   .chip {
     padding: 4px 8px;
@@ -168,16 +155,8 @@ import ThemeToggle from './ThemeToggle.astro';
   .scroll.chip {
     margin-left: -8px;
   }
-  .replay,
   .tr :global(.theme-toggle) {
     background: var(--veil);
-  }
-  .replay {
-    font-size: 13px;
-    color: var(--mute);
-  }
-  .replay:hover {
-    color: var(--ink);
   }
 
   @media (max-width: 820px) {
@@ -185,8 +164,7 @@ import ThemeToggle from './ThemeToggle.astro';
       grid-template-columns: 1fr 1fr;
       grid-template-rows: auto 1fr auto;
     }
-    .e,
-    .hide-sm {
+    .e {
       display: none;
     }
     .c {
