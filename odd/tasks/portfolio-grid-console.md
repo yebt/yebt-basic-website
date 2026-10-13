@@ -32,6 +32,9 @@ The repo only holds the Astro starter. The user approved the v3 direction: home 
 - [x] T4 Home page: hero grid, latest 3 projects cards, practice, garden list, contact.
 - [x] T5 Projects: index with stack filter (works without JS), detail page with video/playlist.
 - [x] T6 Garden: index + note page with stage and tags.
+- [x] T7 Remove the ASCII readout ("N × M CELLS · XPX") and the REPLAY button from the home hero (user feedback 2026-10-13).
+- [x] T8 Smoother ASCII resolve: more, finer sequential steps; character ramp grows with each step (few chars at large cells → full ramp at small cells); crossfade between steps; fade-in of the blurred portrait once the image loads. Reduced motion: final state, no fades.
+- [x] T9 Brand mark: SVG favicon (light/dark aware) plus apple-touch icon, web manifest icons and a default OG image, wired in the base layout.
 
 ## Acceptance criteria
 - `npm run build` passes; `npm test` passes.
@@ -56,6 +59,10 @@ The repo only holds the Astro starter. The user approved the v3 direction: home 
 - T6 `e95f678` feat(garden). RED: 2 failed (groupByStage). GREEN: 33 passed. `npm run build` -> 10 pages.
 - Polish `a3d9bff` fix(portfolio): veil chips behind hero text on the portrait (contrast), space between pitch spans, UTC note dates. Visual round: headless Chrome 1440x900 dark/light and 360px home/projects/garden, no horizontal scroll.
 - Final checks: `npx vitest run` -> 4 files, 33 passed; `npm run build` -> 10 pages; impeccable `detect.mjs --json src` -> [] (no findings).
+
+- T7 `2c87a5e` refactor(home): readout chip, REPLAY button, their styles, `.hide-sm` and the canvas hooks removed. Route: delegated direct (writer trigger: 2+ non-trivial files). Checks: `npx vitest run` -> 33 passed; `npm run build` -> 10 pages. Test-first exception: markup/CSS removal only.
+- T8 `a98f36e` feat(ascii): `stepSequence` (geometric 40->6, 14 steps: 40,35,30,26,22,19,17,14,12,11,9,8,7,6), `rampForStep` (4 chars -> full RAMP, order preserved), `easeOut`; STEP_MS 240 (3.36 s), 200 ms crossfade via two offscreen frames + rAF, 800 ms canvas fade-in after image + font load. RED: 12 failed / 33 passed. GREEN: 45 passed. `npm run build` -> 10 pages. Headless Chrome (playwright-core + system Chrome) 1440x900 dark/light, 360x800: canvas opacity 0 -> 1 over ~0.9 s, no readout/replay, no horizontal scroll, final frame unchanged; reduced motion -> `is-ready`, transition 0s, final step drawn.
+- T9 `eacab5a` feat(brand): favicon.svg (solid isometric-layers mark, prefers-color-scheme aware), favicon.ico (16+32 PNG-in-ICO), apple-touch-icon 180, icon-192/512 (dotted mark in hairline cell), site.webmanifest, og.png 1200x630 (rendered from HTML in headless Chrome with the self-hosted fonts); head wired with theme-color light/dark and OG/Twitter defaults. `site` is not set in astro.config.mjs, so og:image is relative (`/og.png`) and og:url is omitted until it is. Checks: 45 passed; build 10 pages; dist contains all assets and dist/index.html references them; manifest served as application/manifest+json.
 
 ## Next step
 Parent: review assessment / delivery decision (chain strategy, since the branch exceeds ~400 authored lines). Replace placeholders in `src/data/site.ts` and content Markdown.
