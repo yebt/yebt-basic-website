@@ -3,11 +3,15 @@ import {
   DESKTOP_MIN_WIDTH,
   RAMP,
   STEPS,
+  STEP_MS,
   charFor,
   colorFor,
   gridSize,
   luminance,
   portraitPlacement,
+  rampForStep,
+  stepSequence,
+  easeOut,
 } from './ascii';
 
 describe('luminance', () => {
@@ -88,9 +92,85 @@ describe('colorFor', () => {
   });
 });
 
+describe('stepSequence', () => {
+  it('starts at the coarse size and ends at the fine size', () => {
+    const steps = stepSequence(40, 6, 14);
+    expect(steps[0]).toBe(40);
+    expect(steps[steps.length - 1]).toBe(6);
+  });
+
+  it('decreases strictly so every step is a visible change', () => {
+    const steps = stepSequence(40, 6, 14);
+    for (let i = 1; i < steps.length; i++) expect(steps[i]).toBeLessThan(steps[i - 1]);
+  });
+
+  it('keeps the requested length when sizes stay distinct', () => {
+    expect(stepSequence(40, 6, 14)).toHaveLength(14);
+  });
+
+  it('shrinks by a similar ratio each step (no big jumps at the end)', () => {
+    const steps = stepSequence(40, 6, 14);
+    for (let i = 1; i < steps.length; i++) expect(steps[i] / steps[i - 1]).toBeGreaterThan(0.7);
+  });
+
+  it('drops duplicates produced by rounding', () => {
+    const steps = stepSequence(8, 6, 10);
+    expect(steps).toEqual([8, 7, 6]);
+  });
+});
+
+describe('rampForStep', () => {
+  it('starts with four characters spanning empty to dense', () => {
+    const first = rampForStep(0, 14);
+    expect(first).toHaveLength(4);
+    expect(first[0]).toBe(RAMP[0]);
+    expect(first[first.length - 1]).toBe(RAMP[RAMP.length - 1]);
+  });
+
+  it('ends with the full ramp', () => {
+    expect(rampForStep(13, 14)).toBe(RAMP);
+  });
+
+  it('never shrinks from one step to the next', () => {
+    for (let i = 1; i < 14; i++) {
+      expect(rampForStep(i, 14).length).toBeGreaterThanOrEqual(rampForStep(i - 1, 14).length);
+    }
+  });
+
+  it('preserves the empty-to-dense ordering of the full ramp', () => {
+    for (let i = 0; i < 14; i++) {
+      const indices = [...rampForStep(i, 14)].map((ch) => RAMP.indexOf(ch));
+      for (let k = 1; k < indices.length; k++) expect(indices[k]).toBeGreaterThan(indices[k - 1]);
+    }
+  });
+
+  it('returns the full ramp for a single-step sequence', () => {
+    expect(rampForStep(0, 1)).toBe(RAMP);
+  });
+});
+
+describe('easeOut', () => {
+  it('clamps to 0..1 and eases out', () => {
+    expect(easeOut(-1)).toBe(0);
+    expect(easeOut(0)).toBe(0);
+    expect(easeOut(1)).toBe(1);
+    expect(easeOut(2)).toBe(1);
+    expect(easeOut(0.5)).toBeGreaterThan(0.5);
+  });
+});
+
 describe('animation constants', () => {
-  it('steps from coarse to fine', () => {
-    expect(STEPS).toEqual([40, 30, 21, 14, 10, 6]);
+  it('steps from coarse to fine with many small steps', () => {
+    expect(STEPS[0]).toBe(40);
+    expect(STEPS[STEPS.length - 1]).toBe(6);
+    expect(STEPS.length).toBeGreaterThanOrEqual(12);
+    expect(STEPS.length).toBeLessThanOrEqual(16);
     expect(RAMP).toBe(' .:-=+*#%@');
+  });
+
+  it('resolves in roughly three to four seconds', () => {
+    const total = STEPS.length * STEP_MS;
+    expect(total).toBeGreaterThanOrEqual(3000);
+    expect(total).toBeLessThanOrEqual(4000);
   });
 });

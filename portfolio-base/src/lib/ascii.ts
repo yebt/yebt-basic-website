@@ -6,11 +6,58 @@
 /** Characters from empty to dense. */
 export const RAMP = ' .:-=+*#%@';
 
+/** Characters in the ramp of the first (coarsest) step. */
+export const MIN_RAMP_CHARS = 4;
+
+/**
+ * Cell sizes in px, coarse to fine, shrinking by a constant ratio so the
+ * resolve reads as one continuous motion instead of a few jumps.
+ * Interpolates geometrically from `from` to `to` and drops rounding duplicates.
+ */
+export function stepSequence(from: number, to: number, count: number): number[] {
+  const steps: number[] = [];
+  const n = Math.max(1, count);
+  for (let i = 0; i < n; i++) {
+    const t = n === 1 ? 1 : i / (n - 1);
+    const size = Math.round(from * Math.pow(to / from, t));
+    if (steps[steps.length - 1] !== size) steps.push(size);
+  }
+  return steps;
+}
+
 /** Cell sizes in px, coarse to fine. */
-export const STEPS = [40, 30, 21, 14, 10, 6] as const;
+export const STEPS: readonly number[] = stepSequence(40, 6, 14);
 
 /** Milliseconds each step stays on screen. */
-export const STEP_MS = 560;
+export const STEP_MS = 240;
+
+/** Milliseconds a new step takes to fade in over the previous one. */
+export const CROSSFADE_MS = 200;
+
+/** Milliseconds the canvas takes to fade in once the portrait has loaded. */
+export const FADE_IN_MS = 800;
+
+/**
+ * Subset of `ramp` used at `step` of `total`: starts with MIN_RAMP_CHARS evenly
+ * spaced characters (always the emptiest and the densest) and grows to the full
+ * ramp on the last step, keeping the empty-to-dense order.
+ */
+export function rampForStep(step: number, total: number, ramp: string = RAMP): string {
+  const len = ramp.length;
+  const min = Math.min(MIN_RAMP_CHARS, len);
+  const t = total <= 1 ? 1 : Math.min(1, Math.max(0, step / (total - 1)));
+  const count = Math.round(min + (len - min) * t);
+  if (count >= len) return ramp;
+  let out = '';
+  for (let k = 0; k < count; k++) out += ramp[Math.round((k * (len - 1)) / (count - 1))];
+  return out;
+}
+
+/** Cubic ease-out on a progress value clamped to 0..1. */
+export function easeOut(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return 1 - Math.pow(1 - x, 3);
+}
 
 /** Viewport width at which the portrait uses the desktop placement. */
 export const DESKTOP_MIN_WIDTH = 820;
