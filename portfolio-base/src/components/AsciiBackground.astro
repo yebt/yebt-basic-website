@@ -1,0 +1,148 @@
+---
+/**
+ * Fixed full-viewport ASCII portrait. Cells resolve 40 -> 6 px.
+ * Hooks: any element with [data-ascii-readout] gets "N × M CELLS · XPX";
+ * any [data-ascii-replay] button restarts the sequence.
+ */
+import { getImage } from 'astro:assets';
+import portrait from '../assets/portrait.jpg';
+
+const source = await getImage({ src: portrait, width: 320, format: 'webp' });
+---
+
+<canvas class="ascii" aria-hidden="true" data-ascii data-src={source.src}></canvas>
+
+<style>
+  .ascii {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  import { RAMP, STEPS, STEP_MS, charFor, colorFor, gridSize, intensity, luminance, portraitPlacement } from '../lib/ascii';
+
+  const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-ascii]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx && canvas.dataset.src) {
+    const img = new Image();
+    const src = document.createElement('canvas');
+    const lo = document.createElement('canvas');
+    const sm = document.createElement('canvas');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let cell: number = STEPS[0];
+    let timer: number | undefined;
+
+    const isDark = () => document.documentElement.dataset.theme !== 'light';
+
+    const setReadout = (cols: number, rows: number) => {
+      document.querySelectorAll('[data-ascii-readout]').forEach((el) => {
+        el.textContent = `${cols} × ${rows} CELLS · ${cell}PX`;
+      });
+    };
+
+    const draw = (size: number) => {
+      cell = size;
+      const W = canvas.clientWidth;
+      const H = canvas.clientHeight;
+      if (!W || !H || !img.complete || !img.naturalWidth) return;
+      const dark = isDark();
+      const bg =
+        getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || (dark ? '#0b0c0b' : '#e5e4df');
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // 1. Composite the photo onto a viewport-sized source.
+      src.width = W;
+      src.height = H;
+      const s = src.getContext('2d');
+      if (!s) return;
+      s.fillStyle = bg;
+      s.fillRect(0, 0, W, H);
+      const place = portraitPlacement(W, H);
+      s.filter = dark ? 'none' : 'grayscale(0.15) contrast(1.05)';
+      s.drawImage(img, place.x, place.y, place.size, place.size);
+      s.filter = 'none';
+
+      // 2. Low-res blurred photo underneath the characters.
+      lo.width = 40;
+      lo.height = Math.max(1, Math.round((40 * H) / W));
+      lo.getContext('2d')?.drawImage(src, 0, 0, lo.width, lo.height);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(22px) brightness(1.08) saturate(0.55)';
+      ctx.globalAlpha = dark ? 1 : 0.6;
+      ctx.drawImage(lo, -40, -40, W + 80, H + 80);
+      ctx.restore();
+
+      // 3. One character per cell, sampled from a cols x rows downscale.
+      const { cols, rows } = gridSize(W, H, size);
+      sm.width = cols;
+      sm.height = rows;
+      const g = sm.getContext('2d', { willReadFrequently: true });
+      if (!g) return;
+      g.drawImage(src, 0, 0, cols, rows);
+      const data = g.getImageData(0, 0, cols, rows).data;
+      ctx.font = `${Math.max(5, Math.round(size * 0.8))}px "Geist Mono", monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const i = (r * cols + c) * 4;
+          const R = data[i];
+          const G = data[i + 1];
+          const B = data[i + 2];
+          const lum = luminance(R, G, B);
+          const ch = charFor(lum, RAMP, dark);
+          if (ch === ' ') continue;
+          ctx.fillStyle = colorFor(R, G, B, intensity(lum, dark), dark);
+          ctx.fillText(ch, c * size + size / 2, r * size + size / 2);
+        }
+      }
+      setReadout(cols, rows);
+    };
+
+    const play = () => {
+      window.clearTimeout(timer);
+      if (reduceMotion.matches) {
+        draw(STEPS[STEPS.length - 1]);
+        return;
+      }
+      let i = 0;
+      const tick = () => {
+        draw(STEPS[i]);
+        i += 1;
+        if (i < STEPS.length) timer = window.setTimeout(tick, STEP_MS);
+      };
+      tick();
+    };
+
+    let resizeTimer: number | undefined;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => draw(cell), 150);
+    });
+
+    new MutationObserver(() => draw(cell)).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    document.querySelectorAll('[data-ascii-replay]').forEach((button) => button.addEventListener('click', play));
+
+    img.addEventListener('load', () => {
+      const fontReady = document.fonts ? document.fonts.load('10px "Geist Mono"').catch(() => undefined) : Promise.resolve();
+      fontReady.then(play);
+    });
+    img.src = canvas.dataset.src;
+  }
+</script>

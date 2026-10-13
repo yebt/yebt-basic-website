@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import AsciiBackground from '../components/AsciiBackground.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const projects = await getCollection('projects');
@@ -7,8 +8,10 @@ const notes = await getCollection('garden');
 ---
 
 <BaseLayout>
+  <AsciiBackground slot="background" />
   <main id="main" class="panel">
     <h2>Grid Console</h2>
-    <p>{projects.length} projects · {notes.length} notes</p>
+    <p>{projects.length} projects · {notes.length} notes · <span data-ascii-readout>—</span></p>
+    <button type="button" class="btn" data-ascii-replay>REPLAY</button>
   </main>
 </BaseLayout>
