@@ -1,0 +1,57 @@
+---
+/** Section title row: h2 on the left, optional "see all" link on the right. */
+interface Props {
+  title: string;
+  id?: string;
+  href?: string;
+  linkLabel?: string;
+  level?: 'h1' | 'h2';
+}
+const { title, id, href, linkLabel, level = 'h2' } = Astro.props;
+const Heading = level;
+---
+
+<div class="section-header">
+  <Heading id={id} class="title">{title}</Heading>
+  {
+    href && linkLabel && (
+      <a href={href} class="more">
+        {linkLabel}
+        <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true">
+          <path d="M0 5h14M10 1l4 4-4 4" fill="none" stroke="currentColor" />
+        </svg>
+      </a>
+    )
+  }
+</div>
+
+<style>
+  .section-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 40px;
+    font-family: var(--font-display);
+  }
+  .title {
+    margin: 0;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    font-size: 15px;
+    color: var(--mute);
+  }
+  .more:hover {
+    color: var(--ink);
+  }
+</style>

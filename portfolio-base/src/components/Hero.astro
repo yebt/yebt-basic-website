@@ -1,0 +1,192 @@
+---
+/**
+ * Home hero: 3x3 hairline grid. Doubles as the page banner (logo, nav, theme)
+ * and holds the h1. Cells marked .e are empty spacers hidden on small screens.
+ */
+import { site } from '../data/site';
+import Nav from './Nav.astro';
+import ThemeToggle from './ThemeToggle.astro';
+---
+
+<header class="hero">
+  <div class="cell r b tl display">
+    <a href="#top" id="top" class="brand">{site.domain}</a>
+  </div>
+  <div class="cell e r b"></div>
+  <div class="cell b tr display">
+    <Nav home />
+    <ThemeToggle />
+  </div>
+
+  <div class="cell e r b"></div>
+  <div class="cell c r b center">
+    <div class="intro display">
+      <svg class="layers" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 4.6">
+          <path d="M26 6 L46 16 L26 26 L6 16 Z"></path>
+          <path d="M6 25 L26 35 L46 25"></path>
+          <path d="M6 34 L26 44 L46 34"></path>
+        </g>
+      </svg>
+      <p class="pitch">
+        <span class="ink">I build <del>features</del> systems</span>
+        <span class="mute">that stay clear, tested and easy to change, from the domain model to the interface.</span>
+      </p>
+      <h1 class="name"><span class="caret" aria-hidden="true"></span>{site.name} — {site.role}</h1>
+    </div>
+  </div>
+  <div class="cell e b"></div>
+
+  <div class="cell r bl display">
+    <a href="#work" class="scroll">
+      SCROLL
+      <svg width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M5 0v12M1 8l4 4 4-4" fill="none" stroke="currentColor"></path></svg>
+    </a>
+  </div>
+  <div class="cell e r bm display">
+    <span>OPEN TO ARCHITECTURE ROLES · {site.location}</span>
+  </div>
+  <div class="cell br display">
+    <span class="hide-sm" data-ascii-readout aria-hidden="true">— CELLS · 40PX</span>
+    <button type="button" class="btn replay hide-sm" data-ascii-replay>REPLAY<span class="sr-only"> portrait animation</span></button>
+  </div>
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    grid-template-rows: 1fr 1.5fr 1fr;
+    height: 100vh;
+    height: 100svh;
+    min-height: 640px;
+  }
+  .cell {
+    min-width: 0;
+  }
+  .r {
+    border-right: 1px solid var(--line);
+  }
+  .b {
+    border-bottom: 1px solid var(--line);
+  }
+  .tl {
+    padding: 14px 24px;
+    font-size: 15px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .tr {
+    padding: 14px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 4px 22px;
+    font-size: 15px;
+  }
+  .center {
+    display: flex;
+    align-items: center;
+    padding: 40px var(--gutter);
+    background: var(--frost);
+    backdrop-filter: blur(14px) saturate(0.7);
+    -webkit-backdrop-filter: blur(14px) saturate(0.7);
+  }
+  .intro {
+    max-width: 400px;
+    font-size: 19px;
+    line-height: 1.45;
+    letter-spacing: 0.04em;
+  }
+  .layers {
+    display: block;
+    margin-bottom: 36px;
+    color: var(--mute);
+  }
+  .pitch {
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .ink {
+    color: var(--ink);
+  }
+  .mute {
+    color: var(--mute);
+  }
+  del {
+    color: var(--mute);
+    text-decoration-thickness: 1px;
+  }
+  .name {
+    margin: 72px 0 0;
+    font-weight: 400;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .name .caret {
+    color: var(--ink);
+  }
+  .bl,
+  .bm {
+    padding: 24px;
+    display: flex;
+    align-items: flex-end;
+    font-size: 14px;
+    color: var(--mute);
+  }
+  .bm {
+    padding: 24px var(--gutter);
+  }
+  .scroll {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    min-height: 44px;
+  }
+  .br {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--mute);
+  }
+  .replay {
+    font-size: 13px;
+    color: var(--mute);
+  }
+  .replay:hover {
+    color: var(--ink);
+  }
+
+  @media (max-width: 820px) {
+    .hero {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr auto;
+    }
+    .e,
+    .hide-sm {
+      display: none;
+    }
+    .c {
+      grid-column: 1 / -1;
+      border-right: 0;
+    }
+    .tl,
+    .tr {
+      padding: 8px 16px;
+    }
+    .bl {
+      padding: 16px;
+    }
+  }
+</style>

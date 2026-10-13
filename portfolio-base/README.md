@@ -18,3 +18,4 @@ Portfolio of Yahir Eduardo Bravo, software architect. Astro 7, static output, no
 - `src/layouts/BaseLayout.astro` — head, no-flash theme script, grain overlay, skip link, header.
 - `src/components/` — presentational components (`Nav`, `ThemeToggle`, `SiteHeader`, ...).
 - `src/lib/ascii.ts` — pure ASCII portrait logic (tested in `ascii.test.ts`); `AsciiBackground.astro` draws it on a fixed canvas.
+- `src/data/site.ts` — site facts and placeholders (email, CV, social links, city) plus the Practice list.

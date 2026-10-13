@@ -3,6 +3,7 @@ import '@fontsource/share-tech-mono/400.css';
 import '@fontsource/geist-mono/400.css';
 import '@fontsource/geist-mono/500.css';
 import '../styles/global.css';
+import Footer from '../components/Footer.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 
 interface Props {
@@ -75,6 +76,7 @@ const {
     <div class="page">
       {!home && <SiteHeader />}
       <slot />
+      <Footer />
     </div>
   </body>
 </html>
