@@ -1,0 +1,162 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getProjects, projectCode, type Project } from '../../lib/collections';
+import { youtubeEmbedUrl } from '../../lib/youtube';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const { title, summary, year, arch, stack, video, playlist, videoLabel, repo, live } = project.data;
+const { Content } = await render(project);
+const embed = video ? youtubeEmbedUrl(video) : undefined;
+---
+
+<BaseLayout title={`${title} — Yahir Eduardo Bravo`} description={summary}>
+  <main id="main" class="panel">
+    <article class="project">
+      <a class="back" href="/projects/">
+        <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true"><path d="M16 5H2M6 1L2 5l4 4" fill="none" stroke="currentColor"></path></svg>
+        ALL PROJECTS
+      </a>
+      <h1 class="title">{title}</h1>
+      <dl class="facts">
+        <div><dt>CODE</dt><dd>{projectCode(project)}</dd></div>
+        <div><dt>ARCHITECTURE</dt><dd>{arch}</dd></div>
+        <div><dt>YEAR</dt><dd>{year}</dd></div>
+        <div><dt>STACK</dt><dd>{stack.join(' · ')}</dd></div>
+      </dl>
+      <p class="summary">{summary}</p>
+
+      {
+        embed && (
+          <figure class="video">
+            <iframe
+              src={embed}
+              title={`${title}: ${videoLabel}`}
+              loading="lazy"
+              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"
+            />
+            <figcaption>{videoLabel}</figcaption>
+          </figure>
+        )
+      }
+
+      <div class="links">
+        {
+          video && !embed && (
+            <a class="btn" href={video}>
+              WATCH · {videoLabel}
+            </a>
+          )
+        }
+        {
+          playlist && (
+            <a class="btn btn--solid" href={playlist}>
+              OPEN PLAYLIST · {videoLabel}
+            </a>
+          )
+        }
+        {
+          repo && (
+            <a class="btn" href={repo}>
+              REPOSITORY
+            </a>
+          )
+        }
+        {
+          live && (
+            <a class="btn" href={live}>
+              LIVE SITE
+            </a>
+          )
+        }
+      </div>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .project {
+    max-width: 960px;
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    font-family: var(--font-display);
+    color: var(--mute);
+  }
+  .title {
+    margin: 24px 0 32px;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(36px, 6vw, 72px);
+    line-height: 1.05;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin: 0;
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .facts div {
+    padding: 14px 16px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .facts dt {
+    font-size: 12px;
+    color: var(--mute);
+  }
+  .facts dd {
+    margin: 6px 0 0;
+    font-family: var(--font-display);
+    font-size: 15px;
+  }
+  .summary {
+    max-width: 62ch;
+    margin: 32px 0;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .video {
+    margin: 0 0 24px;
+    border: 1px solid var(--line-strong);
+  }
+  .video iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+  }
+  .video figcaption {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--mute);
+    border-top: 1px solid var(--line);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+</style>

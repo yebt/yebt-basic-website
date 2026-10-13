@@ -1,0 +1,105 @@
+---
+import ProjectCard from '../../components/ProjectCard.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { uniqueStack } from '../../lib/filter';
+import { getProjects } from '../../lib/collections';
+
+const projects = await getProjects();
+const stack = uniqueStack(projects.map((p) => p.data.stack));
+---
+
+<BaseLayout title="Projects — Yahir Eduardo Bravo" description="All projects by Yahir Eduardo Bravo, filterable by stack.">
+  <main id="main" class="panel">
+    <SectionHeader title="Projects" level="h1" />
+    <div class="filter" data-filter hidden>
+      <p class="filter-label" id="filter-label">Filter by stack</p>
+      <div class="chips" role="group" aria-labelledby="filter-label">
+        <button type="button" class="btn" data-filter-all aria-pressed="true">ALL</button>
+        {
+          stack.map((item) => (
+            <button type="button" class="btn" data-filter-value={item} aria-pressed="false">
+              {item}
+            </button>
+          ))
+        }
+      </div>
+      <p class="count" data-filter-count role="status" aria-live="polite">{projects.length} projects</p>
+    </div>
+    <div class="cards">
+      {projects.map((project) => <ProjectCard project={project} headingLevel="h2" />)}
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .filter {
+    margin-bottom: 32px;
+  }
+  .filter-label,
+  .count {
+    margin: 0;
+    font-size: 12px;
+    color: var(--mute);
+    text-transform: uppercase;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .chips .btn {
+    font-size: 13px;
+    color: var(--mute);
+  }
+  .chips .btn[aria-pressed='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: 20px;
+  }
+  .cards :global([hidden]) {
+    display: none;
+  }
+</style>
+
+<script>
+  import { matchesStack } from '../../lib/filter';
+
+  const root = document.querySelector<HTMLElement>('[data-filter]');
+  if (root) {
+    const all = root.querySelector<HTMLButtonElement>('[data-filter-all]');
+    const toggles = [...root.querySelectorAll<HTMLButtonElement>('[data-filter-value]')];
+    const count = root.querySelector<HTMLElement>('[data-filter-count]');
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-stack]')];
+
+    const apply = () => {
+      const selected = toggles.filter((t) => t.getAttribute('aria-pressed') === 'true').map((t) => t.dataset.filterValue ?? '');
+      all?.setAttribute('aria-pressed', String(selected.length === 0));
+      let visible = 0;
+      cards.forEach((card) => {
+        const show = matchesStack((card.dataset.stack ?? '').split('|'), selected);
+        card.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (count) count.textContent = `${visible} ${visible === 1 ? 'project' : 'projects'}`;
+    };
+
+    toggles.forEach((toggle) =>
+      toggle.addEventListener('click', () => {
+        toggle.setAttribute('aria-pressed', String(toggle.getAttribute('aria-pressed') !== 'true'));
+        apply();
+      }),
+    );
+    all?.addEventListener('click', () => {
+      toggles.forEach((t) => t.setAttribute('aria-pressed', 'false'));
+      apply();
+    });
+    root.hidden = false;
+  }
+</script>
