@@ -6,7 +6,7 @@ import { groupByStage } from '../../lib/garden';
 
 const notes = await getNotes();
 const groups = groupByStage(notes, (note) => note.data.stage);
-const date = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit' });
+const date = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' });
 ---
 
 <BaseLayout title="Garden — Yahir Eduardo Bravo" description="Working notes on architecture, design systems and graphics, grouped by how grown they are.">

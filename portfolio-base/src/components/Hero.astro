@@ -29,7 +29,7 @@ import ThemeToggle from './ThemeToggle.astro';
         </g>
       </svg>
       <p class="pitch">
-        <span class="ink">I build <del>features</del> systems</span>
+        <span class="ink">I build <del>features</del> systems</span>{' '}
         <span class="mute">that stay clear, tested and easy to change, from the domain model to the interface.</span>
       </p>
       <h1 class="name"><span class="caret" aria-hidden="true"></span>{site.name} — {site.role}</h1>
@@ -38,16 +38,16 @@ import ThemeToggle from './ThemeToggle.astro';
   <div class="cell e b"></div>
 
   <div class="cell r bl display">
-    <a href="#work" class="scroll">
+    <a href="#work" class="scroll chip">
       SCROLL
       <svg width="10" height="14" viewBox="0 0 10 14" aria-hidden="true"><path d="M5 0v12M1 8l4 4 4-4" fill="none" stroke="currentColor"></path></svg>
     </a>
   </div>
   <div class="cell e r bm display">
-    <span>OPEN TO ARCHITECTURE ROLES · {site.location}</span>
+    <span class="chip">OPEN TO ARCHITECTURE ROLES · {site.location}</span>
   </div>
   <div class="cell br display">
-    <span class="hide-sm" data-ascii-readout aria-hidden="true">— CELLS · 40PX</span>
+    <span class="hide-sm chip" data-ascii-readout aria-hidden="true">— CELLS · 40PX</span>
     <button type="button" class="btn replay hide-sm" data-ascii-replay>REPLAY<span class="sr-only"> portrait animation</span></button>
   </div>
 </header>
@@ -159,6 +159,18 @@ import ThemeToggle from './ThemeToggle.astro';
     gap: 10px;
     font-size: 13px;
     color: var(--mute);
+  }
+  /* Text sitting directly on the portrait gets a veil so it keeps 4.5:1. */
+  .chip {
+    padding: 4px 8px;
+    background: var(--veil);
+  }
+  .scroll.chip {
+    margin-left: -8px;
+  }
+  .replay,
+  .tr :global(.theme-toggle) {
+    background: var(--veil);
   }
   .replay {
     font-size: 13px;
