@@ -1,0 +1,190 @@
+---
+/**
+ * Collage for MDX content: photo cutouts placed on a 12 x 9 grid over a dark
+ * print ground, with solid dark blocks, thin guide lines that run past the
+ * pieces, quarter arcs and tiny technical labels (size in collage units).
+ * Pick a preset `layout` (tower: 4 images, spread: 3, pair: 2) or give each
+ * image its own `area` ("row-start / col-start / row-end / col-end").
+ * Usage: see CONTENT.md.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { COLLAGE, LAYOUTS, cutLabel, parseArea, toGridArea, type LayoutName } from '../../lib/collage';
+
+interface Cut {
+  src: ImageMetadata;
+  alt: string;
+  area?: string;
+  label?: string;
+}
+
+interface Props {
+  images: Cut[];
+  layout?: LayoutName;
+  /** Extra dark blocks; replaces the preset's blocks when given. */
+  blocks?: string[];
+  caption?: string;
+  /** Figure number shown before the caption, e.g. "FIG. 02". */
+  figure?: string;
+  /** Spans into the side column on wide screens. */
+  wide?: boolean;
+}
+
+const { images, layout = 'tower', blocks, caption, figure, wide = false } = Astro.props;
+const preset = LAYOUTS[layout];
+const W = COLLAGE.cols * COLLAGE.cell;
+const H = COLLAGE.rows * COLLAGE.cell;
+const cuts = images.map((image, i) => {
+  const box = parseArea(image.area ?? preset.cuts[i % preset.cuts.length]);
+  return { ...image, box, name: cutLabel(i, box, image.label) };
+});
+const solid = (blocks ?? preset.blocks).map(parseArea);
+const pct = (v: number, of: number) => `${(v / of) * 100}%`;
+---
+
+<figure class:list={['collage-figure', { wide }]}>
+  <div class="collage">
+    {solid.map((box) => <span class="block" style={`grid-area: ${toGridArea(box)}`} />)}
+    {
+      cuts.map((cut) => (
+        <div class="cut" style={`grid-area: ${toGridArea(cut.box)}`}>
+          <Image src={cut.src} alt={cut.alt} widths={[320, 640, 960]} sizes="(max-width: 820px) 60vw, 480px" />
+        </div>
+      ))
+    }
+    <svg class="guides" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      {preset.rules.h.map((y, i) => <line x1="-24" x2={W + 24} y1={y} y2={y} class:list={{ dashed: i % 2 === 0 }} />)}
+      {preset.rules.v.map((x, i) => <line y1="-18" y2={H + 18} x1={x} x2={x} class:list={{ dashed: i % 2 === 1 }} />)}
+      {preset.arcs.map((a) => <path d={`M ${a.cx} ${a.cy - a.r} A ${a.r} ${a.r} 0 0 1 ${a.cx + a.r} ${a.cy}`} />)}
+      {
+        cuts.map((cut) => {
+          const x = (cut.box.col - 1) * COLLAGE.cell;
+          const y = (cut.box.row - 1) * COLLAGE.cell;
+          return <rect x={x} y={y} width={cut.box.cols * COLLAGE.cell} height={cut.box.rows * COLLAGE.cell} />;
+        })
+      }
+    </svg>
+    {
+      cuts.map((cut) => (
+        <span
+          class="tag"
+          aria-hidden="true"
+          style={`left: ${pct((cut.box.col - 1) * COLLAGE.cell, W)}; top: ${pct((cut.box.row - 1 + cut.box.rows) * COLLAGE.cell, H)}`}
+        >
+          {cut.name}
+        </span>
+      ))
+    }
+    {
+      preset.arcs.map((a) => (
+        <span class="tag tag--arc" aria-hidden="true" style={`left: ${pct(a.cx + a.r * 0.72, W)}; top: ${pct(a.cy - a.r * 0.72, H)}`}>
+          R {a.r}
+        </span>
+      ))
+    }
+  </div>
+  {
+    (caption || figure) && (
+      <figcaption>
+        {figure && <span class="fig">{figure}</span>}
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .collage-figure {
+    margin: 2.4em 0;
+  }
+  .collage {
+    --rule: rgba(240, 238, 230, 0.62);
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(9, minmax(0, 1fr));
+    aspect-ratio: 4 / 3;
+    /* Print ground: a steel-blue sky band over near-black, as in an old offset print. */
+    background: linear-gradient(to bottom, #44536a 0%, #2a3342 15.5%, #121312 15.6%);
+    box-shadow: 0 18px 36px -26px rgba(0, 0, 0, 0.7);
+    isolation: isolate;
+  }
+  .block {
+    background:
+      radial-gradient(circle, rgba(255, 255, 255, 0.05) 0.6px, transparent 1px) 0 0 / 5px 5px,
+      #070707;
+  }
+  .cut {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .cut :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .guides {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .guides line,
+  .guides path,
+  .guides rect {
+    fill: none;
+    stroke: var(--rule);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .guides rect {
+    stroke: rgba(240, 238, 230, 0.32);
+  }
+  .guides .dashed {
+    stroke-dasharray: 6 5;
+  }
+  .tag {
+    position: absolute;
+    z-index: 3;
+    margin: 6px 0 0 6px;
+    padding: 1px 4px;
+    background: rgba(7, 7, 7, 0.72);
+    color: rgba(240, 238, 230, 0.86);
+    font-family: var(--font-body);
+    font-size: 9px;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    transform: translateY(-100%) translateY(-12px);
+  }
+  .tag--arc {
+    margin: 0;
+    transform: translate(4px, -50%);
+    background: none;
+  }
+  figcaption {
+    display: flex;
+    gap: 14px;
+    margin-top: 26px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--mute);
+  }
+  .fig {
+    flex: none;
+    font-family: var(--font-display);
+    letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+  @media (max-width: 560px) {
+    .tag {
+      display: none;
+    }
+  }
+</style>

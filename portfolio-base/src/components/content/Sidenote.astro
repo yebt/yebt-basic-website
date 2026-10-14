@@ -1,0 +1,53 @@
+---
+/**
+ * Margin note for MDX content. Place it between paragraphs, right after the
+ * one it comments on: on wide reading layouts it floats into the side column
+ * next to that paragraph; on narrow ones it is an inline callout.
+ * Notes are numbered automatically (NOTE 01, 02, ...).
+ */
+interface Props {
+  /** Optional short heading after the number. */
+  label?: string;
+}
+
+const { label } = Astro.props;
+---
+
+<aside class="sidenote" aria-label={label ? `Side note: ${label}` : 'Side note'}>
+  <span class="head">{label && <span class="label">{label}</span>}</span>
+  <div class="body"><slot /></div>
+</aside>
+
+<style>
+  .sidenote {
+    position: relative;
+    margin: 1.6em 0;
+    padding: 14px 16px 14px 18px;
+    border: 1px solid var(--line);
+    border-left-color: var(--cable);
+    background: var(--slab);
+    font-size: 13px;
+    line-height: 1.6;
+    counter-increment: sidenote;
+  }
+  .head {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .head::before {
+    content: 'NOTE ' counter(sidenote, decimal-leading-zero);
+    color: var(--cable);
+  }
+  .body :global(p) {
+    margin: 0;
+  }
+  .body :global(p + p) {
+    margin-top: 0.6em;
+  }
+</style>

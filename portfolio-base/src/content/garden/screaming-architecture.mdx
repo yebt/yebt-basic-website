@@ -1,0 +1,52 @@
+---
+title: "Screaming architecture: folders that say what the app does"
+stage: evergreen
+tags: [architecture]
+updated: 2026-09-28
+---
+
+import { Callout, Collage, Sidenote } from '../../components/content';
+import terrain from '../../assets/placeholders/terrain.jpg';
+import bloom from '../../assets/placeholders/bloom.jpg';
+import paper from '../../assets/placeholders/paper.jpg';
+
+<Callout kind="placeholder">
+  Sample note showing margin notes and a collage. The images are generated textures; replace the text and the images
+  with the real note.
+</Callout>
+
+Open the source folder of a project and read the first level. If it says `controllers`, `services` and `models`, it tells
+you which framework was used. If it says `billing`, `catalog` and `shipping`, it tells you what the application does.
+The second one is screaming architecture.
+
+<Sidenote label="Origin">
+  The name comes from Robert C. Martin: the architecture of a system should scream its use cases, not its framework.
+</Sidenote>
+
+## Why it matters
+
+A new person on the team reads folders before code. When the top level names the domain, the shortest path to a change
+is also the most obvious one: find the feature, open its folder, everything it needs is inside or one port away.
+
+<Sidenote>
+  Frameworks still have a place: at the edges, in adapters, where replacing them touches one folder.
+</Sidenote>
+
+The same rule works on a front end. Group by feature (`checkout`, `search`, `account`), and inside each feature keep
+containers, presentational components and their tests together.
+
+<Collage
+  layout="spread"
+  figure="FIG. 01"
+  caption="Placeholder collage, spread layout: three cuts on a diagonal. Use it for before/after folder trees or screenshots."
+  images={[
+    { src: terrain, alt: 'Placeholder texture, grey terrain', label: 'BEFORE' },
+    { src: paper, alt: 'Placeholder texture, scrub marks on pale paper', label: 'AFTER' },
+    { src: bloom, alt: 'Placeholder texture, orange clusters on black', label: 'EDGES' },
+  ]}
+/>
+
+## How to start
+
+Pick one feature, move everything it owns into a folder named after it, and leave the rest alone. Repeat when you next
+touch another feature. The structure changes with the work instead of in a rewrite.

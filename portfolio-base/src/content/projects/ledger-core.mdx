@@ -1,0 +1,83 @@
+---
+title: Ledger Core
+summary: Accounting core split into bounded contexts. Ports and adapters keep the ledger independent of storage and transport.
+year: 2026
+arch: HEXAGONAL
+stack: [GO, POSTGRES, EVENTS]
+video: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+videoLabel: WALKTHROUGH 12:04
+repo: https://github.com/yebt
+featured: true
+order: 1
+---
+
+import { Callout, Collage, Figure, Sidenote } from '../../components/content';
+import terrain from '../../assets/placeholders/terrain.jpg';
+import steel from '../../assets/placeholders/steel.jpg';
+import bloom from '../../assets/placeholders/bloom.jpg';
+import paper from '../../assets/placeholders/paper.jpg';
+
+<Callout kind="placeholder" title="Sample write-up">
+  This page shows how a project explanation is laid out. The text describes the approach in general terms and the images
+  are generated textures; replace both, the video URL and the links with the real project.
+</Callout>
+
+## Context
+
+A ledger is the part of a business that cannot be wrong. Every other feature can be redesigned; the record of what moved,
+when and why has to stay correct through every change around it. Describe here who uses the system, what the books cover
+and which constraints shaped it.
+
+<Sidenote label="Language">
+  Write the domain terms down before the first folder exists: account, entry, posting, period. The structure of the code
+  follows that vocabulary, not the framework's.
+</Sidenote>
+
+The first decision is where the boundaries go. Postings, balances and closing periods each have their own rules and their
+own pace of change, so each one becomes a bounded context with its own model instead of one shared schema.
+
+<Collage
+  layout="tower"
+  figure="FIG. 01"
+  caption="Placeholder collage: four cuts on the 12 × 9 grid with guide lines, arcs and size labels. Replace with diagrams, screenshots or photos of the project."
+  images={[
+    { src: terrain, alt: 'Placeholder texture, grey terrain', label: 'CORE' },
+    { src: steel, alt: 'Placeholder texture, steel-blue gradient', label: 'PORTS' },
+    { src: bloom, alt: 'Placeholder texture, orange clusters on black', label: 'EVENTS' },
+    { src: paper, alt: 'Placeholder texture, scrub marks on pale paper', label: 'STORAGE' },
+  ]}
+/>
+
+## Architecture
+
+The core exposes ports: interfaces that say what it needs (store an entry, publish a posting) without saying how.
+Adapters implement them for a database, a message bus or an HTTP API. The core is compiled and tested without any of
+them.
+
+<Sidenote label="Rule of thumb">
+  If a test of the core needs a container, a port is missing.
+</Sidenote>
+
+Explain the contexts, the ports each one exposes and the adapters behind them. A diagram usually says it faster than
+prose; put it in a figure with a short caption that tells the reader what to look at.
+
+<Figure
+  src={steel}
+  alt="Placeholder texture standing in for an architecture diagram"
+  figure="FIG. 02"
+  caption="Placeholder figure. Use it for a context map or a sequence diagram; keep the caption to one or two lines."
+/>
+
+## Testing strategy
+
+Most of the confidence comes from fast tests of the core against in-memory adapters. A thinner layer of contract tests
+checks that every real adapter honours the same port, so swapping storage is a configuration change, not a rewrite.
+
+<Callout kind="decision" title="Events over shared tables">
+  Contexts talk through published events instead of reading each other's tables. Describe the trade-off you accepted
+  here: eventual consistency between contexts in exchange for independent change.
+</Callout>
+
+## Outcome
+
+What changed after the project shipped, what you would do differently, and what the walkthrough video covers.

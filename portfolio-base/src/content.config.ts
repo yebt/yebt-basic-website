@@ -3,7 +3,7 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 const projects = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/projects' }),
   schema: z.object({
     title: z.string(),
     summary: z.string(),
@@ -26,7 +26,7 @@ const projects = defineCollection({
 });
 
 const garden = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/garden' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/garden' }),
   schema: z.object({
     title: z.string(),
     stage: z.enum(['seedling', 'budding', 'evergreen']),
