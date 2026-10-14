@@ -6,11 +6,12 @@ export const site = {
   role: 'software architect',
   domain: 'YEBT.DEV',
   location: '[CITY]',
-  email: 'mailto:[YOUR EMAIL]',
-  emailLabel: '[YOUR EMAIL]',
+  email: 'mailto:yahir.eduardo.bravo@gmail.com',
+  emailLabel: 'yahir.eduardo.bravo@gmail.com',
   cv: '/cv.pdf',
-  github: 'https://github.com/[YOUR HANDLE]',
-  linkedin: 'https://www.linkedin.com/in/[YOUR HANDLE]',
+  github: 'https://github.com/yebt',
+  githubLabel: '@yebt',
+  linkedin: 'https://www.linkedin.com/in/yahir-eduardo-bravo-tafur/',
 } as const;
 
 export const practice = [
