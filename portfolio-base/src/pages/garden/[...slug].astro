@@ -1,80 +1,86 @@
 ---
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getNotes, type Note } from '../../lib/collections';
+import EntryHead from '../../components/entry/EntryHead.astro';
+import EntryPager from '../../components/entry/EntryPager.astro';
+import ReadingLayout from '../../components/entry/ReadingLayout.astro';
+import RelatedList from '../../components/entry/RelatedList.astro';
+import { getNotes, noteHref, type Note } from '../../lib/collections';
+import { neighbours, readingMinutes, related } from '../../lib/entries';
 
 export async function getStaticPaths() {
   const notes = await getNotes();
-  return notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
+  return notes.map((note) => ({ params: { slug: note.id }, props: { note, notes } }));
 }
 
 interface Props {
   note: Note;
+  notes: Note[];
 }
-const { note } = Astro.props;
+const { note, notes } = Astro.props;
 const { title, stage, tags, updated } = note.data;
-const { Content } = await render(note);
-const date = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(updated);
+const { Content, headings } = await render(note);
+const format = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' });
+const date = format.format(updated);
+
+/** What each growth stage means, as in the garden index. */
+const stageNote = {
+  seedling: 'A seedling: a rough idea, still changing.',
+  budding: 'Budding: taking shape, not settled yet.',
+  evergreen: 'Evergreen: settled, revised as it grows.',
+} as const;
+
+const isSelf = (n: Note) => n.id === note.id;
+// The list is newest first: the previous entry is newer, the next one older.
+const { prev, next } = neighbours(notes, isSelf);
+const close = related(notes, isSelf, (n) => n.data.tags, 3);
 ---
 
 <BaseLayout title={`${title} — Garden`} description={`${stage} note: ${title}`}>
   <main id="main" class="panel">
-    <article class="note">
-      <a class="back" href="/garden/">
-        <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true"><path d="M16 5H2M6 1L2 5l4 4" fill="none" stroke="currentColor"></path></svg>
-        ALL NOTES
-      </a>
-      <h1 class="title">{title}</h1>
-      <dl class="facts">
-        <div><dt>STAGE</dt><dd>{stage.toUpperCase()}</dd></div>
-        <div><dt>TAGS</dt><dd>{tags.map((t) => t.toUpperCase()).join(' · ')}</dd></div>
-        <div><dt>UPDATED</dt><dd><time datetime={updated.toISOString()}>{date.toUpperCase()}</time></dd></div>
-      </dl>
-      <div class="prose">
+    <article>
+      <EntryHead
+        compact
+        back={{ href: '/garden/', label: 'Garden' }}
+        position={`Note ${String(notes.findIndex(isSelf) + 1).padStart(2, '0')} / ${String(notes.length).padStart(2, '0')}`}
+        title={title}
+        lead={stageNote[stage]}
+        facts={[
+          { term: 'Stage', value: stage },
+          { term: 'Tags', value: tags },
+          { term: 'Updated', value: date },
+          { term: 'Reading', value: `${readingMinutes(note.body ?? '')} min` },
+        ]}
+      >
+        <time class="sr-only" datetime={updated.toISOString()}>Updated {date}</time>
+      </EntryHead>
+
+      <ReadingLayout headings={headings}>
         <Content />
-      </div>
+      </ReadingLayout>
     </article>
+
+    <footer class="entry-foot">
+      <EntryPager
+        prev={prev && { href: noteHref(prev), title: prev.data.title }}
+        next={next && { href: noteHref(next), title: next.data.title }}
+        prevLabel="Newer note"
+        nextLabel="Older note"
+      />
+      <RelatedList
+        title="Related notes"
+        items={close.map((n) => ({
+          href: noteHref(n),
+          title: n.data.title,
+          meta: `${n.data.stage} · ${format.format(n.data.updated)}`,
+        }))}
+      />
+    </footer>
   </main>
 </BaseLayout>
 
 <style>
-  .note {
-    max-width: 820px;
-  }
-  .back {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 44px;
-    font-family: var(--font-display);
-    color: var(--mute);
-  }
-  .title {
-    margin: 24px 0 32px;
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: clamp(30px, 5vw, 56px);
-    line-height: 1.1;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    text-wrap: balance;
-  }
-  .facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 40px;
-    margin: 0 0 40px;
-    padding: 14px 0;
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-  .facts dt {
-    font-size: 12px;
-    color: var(--mute);
-  }
-  .facts dd {
-    margin: 6px 0 0;
-    font-family: var(--font-display);
-    font-size: 15px;
+  .entry-foot {
+    margin-top: clamp(64px, 8vw, 112px);
   }
 </style>

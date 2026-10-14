@@ -1,0 +1,161 @@
+---
+/**
+ * Header block of a project or note page: back link and position, the title
+ * and lead on the left, a spec sheet of facts on the right (stacked on phones).
+ * A fact whose value is a list renders as chips.
+ */
+export interface Fact {
+  term: string;
+  value: string | readonly string[];
+}
+
+interface Props {
+  back: { href: string; label: string };
+  /** Position in the list, e.g. "P—01 / 03". */
+  position?: string;
+  title: string;
+  lead?: string;
+  facts: Fact[];
+  /** Smaller title for long note titles. */
+  compact?: boolean;
+}
+
+const { back, position, title, lead, facts, compact = false } = Astro.props;
+---
+
+<header class:list={['entry-head', { compact }]}>
+  <div class="crumbs">
+    <a class="back" href={back.href}>
+      <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true"><path d="M16 5H2M6 1L2 5l4 4" fill="none" stroke="currentColor"></path></svg>
+      {back.label}
+    </a>
+    {position && <span class="position">{position}</span>}
+  </div>
+  <div class="grid">
+    <div class="main">
+      <h1 class="title">{title}</h1>
+      {lead && <p class="lead">{lead}</p>}
+      <slot />
+    </div>
+    <dl class="sheet">
+      {
+        facts.map((fact) => (
+          <div>
+            <dt>{fact.term}</dt>
+            <dd>
+              {typeof fact.value === 'string' ? (
+                fact.value
+              ) : (
+                <ul class="chips">
+                  {fact.value.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</header>
+
+<style>
+  .entry-head {
+    container: head / inline-size;
+  }
+  .crumbs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+  }
+  .back:hover {
+    color: var(--ink);
+  }
+  .grid {
+    display: grid;
+    gap: 40px;
+    padding: clamp(36px, 5vw, 64px) 0 clamp(40px, 5vw, 64px);
+  }
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 6.4vw, 92px);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .compact .title {
+    font-size: clamp(32px, 4.4vw, 60px);
+    line-height: 1.08;
+  }
+  .lead {
+    max-width: 40ch;
+    margin: 28px 0 0;
+    font-size: clamp(17px, 1.6vw, 21px);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .sheet {
+    margin: 0;
+    align-self: start;
+    border-top: 1px solid var(--line-strong);
+  }
+  .sheet div {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet dt {
+    padding-top: 2px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .sheet dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .chips li {
+    padding: 2px 8px;
+    border: 1px solid var(--line-strong);
+    font-size: 13px;
+  }
+  @container head (min-width: 860px) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+      column-gap: clamp(48px, 6vw, 112px);
+      align-items: end;
+    }
+  }
+</style>

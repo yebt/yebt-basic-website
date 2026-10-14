@@ -57,8 +57,8 @@ The paragraph the note comments on.
 </Sidenote>
 ```
 
-Place it right after the paragraph it belongs to. On wide screens it sits in the side column next to that paragraph; on
-narrow screens it becomes an inline note. Notes are numbered automatically.
+Place it between paragraphs. On wide screens it floats into the side column level with the text that follows it; on
+narrow screens it becomes an inline note at that point. Notes are numbered automatically.
 
 ### `<Callout>`: highlighted block
 
