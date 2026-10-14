@@ -6,6 +6,7 @@
 import { site } from '../data/site';
 import AsciiPortrait from './AsciiPortrait.astro';
 import Nav from './Nav.astro';
+import PlantMark from './PlantMark.astro';
 import Rig from './Rig.astro';
 import ThemeToggle from './ThemeToggle.astro';
 ---
@@ -13,7 +14,7 @@ import ThemeToggle from './ThemeToggle.astro';
 <header class="hero">
   <AsciiPortrait />
   <div class="cell r b tl display">
-    <a href="#top" id="top" class="brand">{site.domain}</a>
+    <a href="#top" id="top" class="brand"><PlantMark size={22} />{site.domain}</a>
   </div>
   <div class="cell e r b"></div>
   <div class="cell b tr display">
@@ -24,13 +25,7 @@ import ThemeToggle from './ThemeToggle.astro';
   <div class="cell e r b"></div>
   <div class="cell c r b center">
     <div class="intro display">
-      <svg class="layers" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
-        <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 4.6">
-          <path d="M26 6 L46 16 L26 26 L6 16 Z"></path>
-          <path d="M6 25 L26 35 L46 25"></path>
-          <path d="M6 34 L26 44 L46 34"></path>
-        </g>
-      </svg>
+      <PlantMark class="sprout" size={56} accent />
       <p class="pitch">
         <span class="ink">I build <del>features</del> systems</span>{' '}
         <span class="mute">that stay clear, tested and easy to change, from the domain model to the interface.</span>
@@ -94,6 +89,7 @@ import ThemeToggle from './ThemeToggle.astro';
   .brand {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     min-height: 44px;
   }
   .tr {
@@ -118,9 +114,8 @@ import ThemeToggle from './ThemeToggle.astro';
     line-height: 1.45;
     letter-spacing: 0.04em;
   }
-  .layers {
-    display: block;
-    margin-bottom: 28px;
+  .intro :global(.sprout) {
+    margin: 0 0 26px -6px;
     color: var(--mute);
   }
   .pitch {
