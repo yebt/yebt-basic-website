@@ -52,7 +52,7 @@
   --dot: rgba(18, 19, 18, 0.18);
   --grain: 0.3;
   --grain-blend: multiply;
-  --concrete: 0.32;
+  --concrete: 0.24;
   --concrete-blend: multiply;
   --specks: 0.4;
   --steel: #7a8188;
@@ -82,7 +82,7 @@
     --dot: rgba(18, 19, 18, 0.18);
     --grain: 0.3;
     --grain-blend: multiply;
-    --concrete: 0.32;
+    --concrete: 0.24;
     --concrete-blend: multiply;
     --specks: 0.4;
     --steel: #7a8188;
