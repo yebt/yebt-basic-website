@@ -215,10 +215,18 @@ import ThemeToggle from './ThemeToggle.astro';
       grid-column: 1 / -1;
       border-right: 0;
     }
-    /* Phones: the face stays clear at the top; the slab hugs the copy below it. */
+    /*
+     * Phones: the face stays clear at the top (the hero may grow past the
+     * fold for it); the slab hugs the copy and starts under the eyes.
+     */
+    .hero {
+      height: auto;
+      min-height: 100vh;
+      min-height: 100svh;
+    }
     .center {
       align-items: flex-end;
-      padding: 16px;
+      padding: 58vw 16px 16px;
       background: none;
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
