@@ -3,7 +3,9 @@
  * Home hero: 3x3 hairline grid. Doubles as the page banner (logo, nav, theme)
  * and holds the h1. Cells marked .e are empty spacers hidden on small screens.
  */
+import { cv } from '../data/cv';
 import { site } from '../data/site';
+import Link from './Link.astro';
 import AsciiPortrait from './AsciiPortrait.astro';
 import Nav from './Nav.astro';
 import PlantBuild from './PlantBuild.astro';
@@ -36,13 +38,13 @@ import ThemeToggle from './ThemeToggle.astro';
         label="Main actions"
         actions={[
           { label: 'View work', href: '#work', variant: 'tube' },
-          { label: 'Download CV', href: site.cv },
+          cv,
           { label: 'Email me', href: site.email },
         ]}
       />
       <p class="elsewhere">
-        <a href={site.github} rel="me">GITHUB {site.githubLabel}</a>
-        <a href={site.linkedin} rel="me">LINKEDIN</a>
+        <Link href={site.github} rel="me">GITHUB {site.githubLabel}</Link>
+        <Link href={site.linkedin} rel="me">LINKEDIN</Link>
       </p>
       <h1 class="name"><span class="caret" aria-hidden="true"></span>{site.name} — {site.role}</h1>
     </div>

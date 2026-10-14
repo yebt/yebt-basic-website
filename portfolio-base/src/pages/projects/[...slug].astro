@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, projectCode, type Project } from '../../lib/collections';
 import { youtubeEmbedUrl } from '../../lib/youtube';
+import Link from '../../components/Link.astro';
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -53,30 +54,30 @@ const embed = video ? youtubeEmbedUrl(video) : undefined;
       <div class="links">
         {
           video && !embed && (
-            <a class="btn" href={video}>
+            <Link class="btn" href={video}>
               WATCH · {videoLabel}
-            </a>
+            </Link>
           )
         }
         {
           playlist && (
-            <a class="btn btn--solid" href={playlist}>
+            <Link class="btn btn--solid" href={playlist}>
               OPEN PLAYLIST · {videoLabel}
-            </a>
+            </Link>
           )
         }
         {
           repo && (
-            <a class="btn" href={repo}>
+            <Link class="btn" href={repo}>
               REPOSITORY
-            </a>
+            </Link>
           )
         }
         {
           live && (
-            <a class="btn" href={live}>
+            <Link class="btn" href={live}>
               LIVE SITE
-            </a>
+            </Link>
           )
         }
       </div>

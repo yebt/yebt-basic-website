@@ -10,6 +10,8 @@
  * (container query): vertical rail on the left, actions stacked.
  * Use it only for the actions that matter (hero, contact).
  */
+import { NEW_TAB_HINT, externalAttrs, isExternal } from '../lib/links';
+
 export interface RigAction {
   label: string;
   href: string;
@@ -41,12 +43,13 @@ const { actions, label, class: className } = Astro.props;
             <a
               class={action.variant === 'tube' ? 'tube' : 'btn'}
               href={action.href}
-              rel={action.rel}
-              target={action.target}
               download={action.download ? '' : undefined}
+              {...{ target: action.target, ...externalAttrs(action.href, action.rel) }}
             >
               {action.label}
-              {action.hint && <span class="sr-only"> {action.hint}</span>}
+              {(action.hint ?? (isExternal(action.href) ? NEW_TAB_HINT : undefined)) && (
+                <span class="sr-only"> {action.hint ?? NEW_TAB_HINT}</span>
+              )}
             </a>
           </li>
         ))
