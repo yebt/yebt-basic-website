@@ -3,7 +3,7 @@
  * Home hero: 3x3 hairline grid. Doubles as the page banner (logo, nav, theme)
  * and holds the h1. Cells marked .e are empty spacers hidden on small screens.
  */
-import { cv, cvPage } from '../data/cv';
+import { cv, cvPage, currentRole } from '../data/cv';
 import { site } from '../data/site';
 import Actions from './Actions.astro';
 import Link from './Link.astro';
@@ -42,8 +42,9 @@ const scope = [
         <span class="mute">that stay clear, tested and easy to change, from the domain model to the interface.</span>
       </p>
       <p class="lead">
-        As a software architect I help teams name the domain, draw the boundaries that keep the core free of frameworks,
-        and set the testing and design-system practices that let the code keep pace with the business.
+        {currentRole ? `${currentRole.title} at ${currentRole.organization}, ` : ''}focused on software architecture: I help
+        teams name the domain, draw the boundaries that keep the core free of frameworks, and set the testing and
+        design-system practices that let the code keep pace with the business.
       </p>
       <dl class="scope">
         {scope.map((row) => (

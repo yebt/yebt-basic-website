@@ -3,7 +3,8 @@ import Hero from '../components/Hero.astro';
 import Actions from '../components/Actions.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SectionHeader from '../components/SectionHeader.astro';
-import { cv, cvPage } from '../data/cv';
+import Experience from '../components/Experience.astro';
+import { basics, currentRole, cv, cvPage, education, languages, skills } from '../data/cv';
 import { practice, site } from '../data/site';
 import { getNotes, getProjects, noteHref } from '../lib/collections';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -11,6 +12,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const projects = await getProjects();
 const featured = (projects.some((p) => p.data.featured) ? projects.filter((p) => p.data.featured) : projects).slice(0, 3);
 const notes = (await getNotes()).slice(0, 4);
+
+/** Person structured data from the CV. */
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: basics.name,
+  jobTitle: currentRole?.title,
+  worksFor: currentRole && { '@type': 'Organization', name: currentRole.organization },
+  url: basics.website,
+  email: `mailto:${basics.email}`,
+  address: { '@type': 'PostalAddress', addressLocality: 'Tuluá', addressRegion: 'Valle del Cauca', addressCountry: 'CO' },
+  alumniOf: education.map((item) => ({ '@type': 'CollegeOrUniversity', name: item.institution })),
+  knowsLanguage: languages.map((language) => language.name),
+  knowsAbout: skills.flatMap((group) => group.items),
+  sameAs: [basics.linkedin, basics.github],
+};
 ---
 
 <BaseLayout home>
@@ -22,6 +39,8 @@ const notes = (await getNotes()).slice(0, 4);
         {featured.map((project) => <ProjectCard project={project} />)}
       </div>
     </section>
+
+    <Experience />
 
     <section id="practice" class="panel" aria-labelledby="practice-title">
       <SectionHeader id="practice-title" title="Practice" />
@@ -72,6 +91,7 @@ const notes = (await getNotes()).slice(0, 4);
       />
     </section>
   </main>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(person)} />
 </BaseLayout>
 
 <style>
