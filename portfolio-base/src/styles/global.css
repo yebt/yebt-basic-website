@@ -32,6 +32,8 @@
   --tube-glow: rgba(190, 218, 255, 0.5);
   --tube-haze: rgba(170, 205, 255, 0.16);
   --tube-off: #8a9097;
+  /* Dark recess of an aluminium profile slot or a bolt hole. */
+  --slot: #0b0c0c;
   --portrait-opacity: 0.7;
   /* Blueprint construction lines (hero mark animation). */
   --blueprint: #7ea6dc;
@@ -67,6 +69,7 @@
   --tube-glow: rgba(150, 190, 255, 0.55);
   --tube-haze: rgba(150, 190, 255, 0.18);
   --tube-off: #b7bcc2;
+  --slot: #34383c;
   --portrait-opacity: 0.9;
   --blueprint: #2c5a98;
 }
@@ -98,6 +101,7 @@
     --tube-glow: rgba(150, 190, 255, 0.55);
     --tube-haze: rgba(150, 190, 255, 0.18);
     --tube-off: #b7bcc2;
+    --slot: #34383c;
     --portrait-opacity: 0.9;
     --blueprint: #2c5a98;
   --blueprint: #2c5a98;

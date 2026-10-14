@@ -17,11 +17,18 @@ const Heading = level;
     href && linkLabel && (
       <a href={href} class="more">
         {linkLabel}
-        <svg class="lead" width="44" height="14" viewBox="0 0 44 14" aria-hidden="true">
-          <circle class="pulley" cx="7" cy="7" r="5.5" />
-          <circle class="axle" cx="7" cy="7" r="1.6" />
-          <path class="cable" d="M7 1.5h30" />
-          <path d="M36 2.5l4.5 4.5-4.5 4.5" fill="none" stroke="currentColor" />
+        <svg class="lead" width="48" height="14" viewBox="0 0 48 14" aria-hidden="true" shape-rendering="crispEdges">
+          <rect class="rail" x="0" y="4" width="37" height="6" />
+          <rect class="rail-hi" x="0" y="4" width="37" height="1" />
+          <rect class="slot" x="0" y="6" width="37" height="2" />
+          <rect class="cable" x="0" y="6" width="6" height="2" />
+          <g class="carriage">
+            <rect class="edge" x="2" y="1" width="8" height="12" />
+            <rect class="face" x="3" y="2" width="6" height="10" />
+          </g>
+          <rect class="edge" x="36" y="1" width="12" height="12" />
+          <rect class="cube" x="37" y="2" width="10" height="10" />
+          <circle class="hole" cx="42" cy="7" r="2" shape-rendering="geometricPrecision" />
         </svg>
       </a>
     )
@@ -57,24 +64,53 @@ const Heading = level;
   .more:hover {
     color: var(--ink);
   }
-  /* A short run of cable over a pulley leads into the arrow. */
+  /*
+   * A short profile rail ending in a cube connector. On hover or focus the
+   * carriage slides along the slot to the cube, drawing the orange cable with it.
+   */
   .lead {
-    overflow: visible;
+    flex: none;
   }
-  .lead .pulley {
+  .rail {
     fill: var(--steel);
-    stroke: var(--steel-lo);
   }
-  .lead .axle {
+  .rail-hi {
     fill: var(--steel-hi);
   }
-  .lead .cable {
-    fill: none;
-    stroke: var(--cable);
-    stroke-width: 2;
-    transition: d 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  .slot,
+  .hole {
+    fill: var(--slot);
   }
-  .more:hover .cable {
-    d: path('M7 1.5h33');
+  .edge {
+    fill: var(--steel-lo);
+  }
+  .cube {
+    fill: var(--steel);
+  }
+  .face {
+    fill: var(--steel-hi);
+  }
+  .cable {
+    fill: var(--cable);
+    transform-box: view-box;
+    transform-origin: 0 0;
+  }
+  .carriage,
+  .cable {
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .more:hover .carriage,
+  .more:focus-visible .carriage {
+    transform: translateX(24px);
+  }
+  .more:hover .cable,
+  .more:focus-visible .cable {
+    transform: scaleX(5);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .carriage,
+    .cable {
+      transition: none;
+    }
   }
 </style>
