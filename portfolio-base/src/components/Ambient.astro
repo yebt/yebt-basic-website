@@ -1,0 +1,172 @@
+---
+/**
+ * Ambient sphere field (see `lib/ambient.ts`): a fixed, low-resolution canvas
+ * scaled up behind the content modules, so it shows softly through their
+ * frosted blur. Dark theme adds light (`screen`); light theme tints the
+ * concrete like coloured shade (`multiply`).
+ * Never behind the hero portrait: masked above the hero's bottom edge and
+ * idle while the hero fills the viewport. ~30 fps, paused while the tab is
+ * hidden. Reduced motion: one still frame.
+ */
+---
+
+<canvas class="ambient" aria-hidden="true" data-ambient></canvas>
+
+<style>
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+    -webkit-mask-image: linear-gradient(to bottom, transparent var(--ambient-clear, 0px), #000 var(--ambient-full, 0px));
+    mask-image: linear-gradient(to bottom, transparent var(--ambient-clear, 0px), #000 var(--ambient-full, 0px));
+  }
+  .ambient.is-on {
+    opacity: 1;
+  }
+  :global(:root[data-theme='light']) .ambient {
+    mix-blend-mode: multiply;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ambient {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { BLOB_COUNT, PALETTES, blobAt, frameDue, gridFor, heroMask, shade, warp } from '../lib/ambient';
+
+  const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-ambient]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const FPS = 30;
+    const MAX_CELLS = 96;
+    /** Start mid-motion, so the first frame is already composed. */
+    const T0 = 90;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const hero = document.querySelector<HTMLElement>('.hero');
+    const start = performance.now();
+
+    let image: ImageData | null = null;
+    let aspect = 1;
+    let palette = PALETTES.dark;
+    let active = !hero;
+    let pageVisible = document.visibilityState === 'visible';
+    let raf = 0;
+    let last = -Infinity;
+
+    const resize = () => {
+      const { cols, rows } = gridFor(window.innerWidth, window.innerHeight, MAX_CELLS);
+      if (canvas.width !== cols || canvas.height !== rows) {
+        canvas.width = cols;
+        canvas.height = rows;
+        image = ctx.createImageData(cols, rows);
+      }
+      aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    };
+
+    const readTheme = () => {
+      palette = document.documentElement.dataset.theme === 'light' ? PALETTES.light : PALETTES.dark;
+    };
+
+    const draw = (t: number) => {
+      if (!image) return;
+      const { width: cols, height: rows, data } = image;
+      const blobs = Array.from({ length: BLOB_COUNT }, (_, i) => blobAt(i, t));
+      let k = 0;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const [x, y] = warp((c + 0.5) / cols, (r + 0.5) / rows, t);
+          const px = shade(x, y, blobs, palette, aspect);
+          data[k] = px[0];
+          data[k + 1] = px[1];
+          data[k + 2] = px[2];
+          data[k + 3] = px[3];
+          k += 4;
+        }
+      }
+      ctx.putImageData(image, 0, 0);
+    };
+
+    const still = () => draw(T0);
+
+    const tick = (now: number) => {
+      raf = 0;
+      if (!shouldRun()) return;
+      if (frameDue(now, last, FPS)) {
+        last = now;
+        draw(T0 + (now - start) / 1000);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    const shouldRun = () => active && pageVisible && !reduceMotion.matches;
+
+    const sync = () => {
+      canvas.classList.toggle('is-on', active);
+      if (shouldRun()) {
+        if (!raf) raf = requestAnimationFrame(tick);
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    /** Masks the field above the hero's bottom edge; idle while the hero fills the screen. */
+    const updateMask = () => {
+      if (!hero) return;
+      const mask = heroMask(hero.getBoundingClientRect().bottom, window.innerHeight);
+      canvas.style.setProperty('--ambient-clear', `${mask.clear}px`);
+      canvas.style.setProperty('--ambient-full', `${mask.full}px`);
+      if (mask.active !== active) {
+        active = mask.active;
+        sync();
+      }
+    };
+
+    let scrollQueued = false;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (scrollQueued) return;
+        scrollQueued = true;
+        requestAnimationFrame(() => {
+          scrollQueued = false;
+          updateMask();
+        });
+      },
+      { passive: true },
+    );
+    window.addEventListener('resize', () => {
+      resize();
+      updateMask();
+      if (!shouldRun()) still();
+    });
+    document.addEventListener('visibilitychange', () => {
+      pageVisible = document.visibilityState === 'visible';
+      sync();
+    });
+    reduceMotion.addEventListener('change', () => {
+      still();
+      sync();
+    });
+    new MutationObserver(() => {
+      readTheme();
+      if (!shouldRun()) still();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    readTheme();
+    resize();
+    updateMask();
+    still();
+    sync();
+  }
+</script>
