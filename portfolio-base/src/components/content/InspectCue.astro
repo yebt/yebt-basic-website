@@ -1,0 +1,55 @@
+---
+/**
+ * Small "inspect" tag shown on a gallery trigger while it is hovered or
+ * focused: a drawn expand mark plus the cut's name. The parent decides when it
+ * is visible by toggling opacity on `.inspect-cue`.
+ */
+interface Props {
+  label?: string;
+}
+const { label } = Astro.props;
+---
+
+<span class="inspect-cue" aria-hidden="true">
+  <svg viewBox="0 0 12 12" width="11" height="11">
+    <path d="M1 4.5V1h3.5M7.5 1H11v3.5M11 7.5V11H7.5M4.5 11H1V7.5" />
+  </svg>
+  <span>{label ? `Inspect · ${label}` : 'Inspect'}</span>
+</span>
+
+<style>
+  .inspect-cue {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 16px);
+    padding: 3px 7px 3px 6px;
+    background: rgba(9, 10, 9, 0.84);
+    color: #f1f6ff;
+    border: 1px solid rgba(240, 238, 230, 0.28);
+    font-family: var(--font-body);
+    font-size: 10px;
+    line-height: 1.3;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .inspect-cue span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  svg {
+    flex: none;
+    fill: none;
+    stroke: var(--cable);
+    stroke-width: 1.4;
+  }
+</style>

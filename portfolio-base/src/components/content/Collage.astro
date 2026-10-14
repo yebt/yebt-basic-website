@@ -5,10 +5,14 @@
  * pieces, quarter arcs and tiny technical labels (size in collage units).
  * Pick a preset `layout` (tower: 4 images, spread: 3, pair: 2) or give each
  * image its own `area` ("row-start / col-start / row-end / col-end").
+ * Every cut is a link to its large image; the page gallery (Gallery.astro)
+ * opens it in a viewer. `inspect={false}` keeps the cuts static.
  * Usage: see CONTENT.md.
  */
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
+import InspectCue from './InspectCue.astro';
+import { galleryAttrs } from './gallery-image';
 import { COLLAGE, LAYOUTS, cutLabel, parseArea, toGridArea, type LayoutName } from '../../lib/collage';
 
 interface Cut {
@@ -28,16 +32,23 @@ interface Props {
   figure?: string;
   /** Spans into the side column on wide screens. */
   wide?: boolean;
+  /** Cuts open in the page gallery viewer (default). */
+  inspect?: boolean;
 }
 
-const { images, layout = 'tower', blocks, caption, figure, wide = false } = Astro.props;
+const { images, layout = 'tower', blocks, caption, figure, wide = false, inspect = true } = Astro.props;
 const preset = LAYOUTS[layout];
 const W = COLLAGE.cols * COLLAGE.cell;
 const H = COLLAGE.rows * COLLAGE.cell;
-const cuts = images.map((image, i) => {
-  const box = parseArea(image.area ?? preset.cuts[i % preset.cuts.length]);
-  return { ...image, box, name: cutLabel(i, box, image.label) };
-});
+const cuts = await Promise.all(
+  images.map(async (image, i) => {
+    const box = parseArea(image.area ?? preset.cuts[i % preset.cuts.length]);
+    const name = cutLabel(i, box, image.label);
+    const short = image.label ?? `C-${String(i + 1).padStart(2, '0')}`;
+    const link = inspect ? await galleryAttrs(image.src, { alt: image.alt, label: short, caption, figure }) : null;
+    return { ...image, box, name, short, link };
+  }),
+);
 const solid = (blocks ?? preset.blocks).map(parseArea);
 const pct = (v: number, of: number) => `${(v / of) * 100}%`;
 ---
@@ -46,11 +57,24 @@ const pct = (v: number, of: number) => `${(v / of) * 100}%`;
   <div class="collage">
     {solid.map((box) => <span class="block" style={`grid-area: ${toGridArea(box)}`} />)}
     {
-      cuts.map((cut) => (
-        <div class="cut" style={`grid-area: ${toGridArea(cut.box)}`}>
-          <Image src={cut.src} alt={cut.alt} widths={[320, 640, 960]} sizes="(max-width: 820px) 60vw, 480px" />
-        </div>
-      ))
+      cuts.map((cut) =>
+        cut.link ? (
+          <a
+            class="cut cut--inspect"
+            style={`grid-area: ${toGridArea(cut.box)}`}
+            aria-label={`Inspect ${cut.short}: ${cut.alt}`}
+            aria-haspopup="dialog"
+            {...cut.link}
+          >
+            <Image src={cut.src} alt="" widths={[320, 640, 960]} sizes="(max-width: 820px) 60vw, 480px" />
+            <InspectCue label={cut.short} />
+          </a>
+        ) : (
+          <div class="cut" style={`grid-area: ${toGridArea(cut.box)}`}>
+            <Image src={cut.src} alt={cut.alt} widths={[320, 640, 960]} sizes="(max-width: 820px) 60vw, 480px" />
+          </div>
+        ),
+      )
     }
     <svg class="guides" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
       {preset.rules.h.map((y, i) => <line x1="-24" x2={W + 24} y1={y} y2={y} class:list={{ dashed: i % 2 === 0 }} />)}
@@ -123,6 +147,60 @@ const pct = (v: number, of: number) => `${(v / of) * 100}%`;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  /* Inspectable cuts: the hovered/focused one lifts off the print above the
+     guides and shows its cue; the others dim a little. */
+  .cut--inspect {
+    display: block;
+    cursor: zoom-in;
+    outline-offset: 3px;
+  }
+  .cut--inspect:hover {
+    text-decoration: none;
+  }
+  .cut--inspect::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid transparent;
+    pointer-events: none;
+  }
+  .cut--inspect:is(:hover, :focus-visible) {
+    z-index: 4;
+    transform: translateY(-3px);
+    box-shadow: 0 16px 28px -14px rgba(0, 0, 0, 0.85);
+  }
+  .cut--inspect:is(:hover, :focus-visible)::after {
+    border-color: var(--cable);
+  }
+  .cut--inspect:is(:hover, :focus-visible) :global(img) {
+    filter: brightness(1.08) contrast(1.04);
+  }
+  .cut--inspect:is(:hover, :focus-visible) :global(.inspect-cue) {
+    opacity: 1;
+  }
+  .collage:has(.cut--inspect:is(:hover, :focus-visible)) .cut--inspect:not(:hover, :focus-visible) :global(img) {
+    filter: brightness(0.6) saturate(0.75);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .cut--inspect,
+    .cut--inspect :global(img),
+    .cut--inspect :global(.inspect-cue) {
+      transition:
+        transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+        filter 220ms ease-out,
+        opacity 160ms ease-out;
+    }
+  }
+  /* Touch screens have no hover: keep a quiet cue on every cut. */
+  @media (hover: none) {
+    .cut--inspect :global(.inspect-cue) {
+      opacity: 0.86;
+    }
+    .cut--inspect :global(.inspect-cue span) {
+      display: none;
+    }
   }
   .guides {
     position: absolute;

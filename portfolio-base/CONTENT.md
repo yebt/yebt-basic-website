@@ -47,6 +47,23 @@ Cuts placed on a 12 × 9 grid over a dark ground, with solid blocks, guide lines
 - `label` names the cut in its tag; without it the tag reads `C-01`, `C-02`, …
 - `wide` spans into the side column on wide screens.
 
+### Gallery: inspecting images
+
+Every `<Collage>` cut and every `<Figure>` image is inspectable automatically; there is nothing to add to the `.mdx`.
+
+- Hover or keyboard focus lifts the piece, outlines it in orange and shows an "Inspect" tag with its name; the other
+  cuts of that collage dim. On touch screens the tag stays visible as a small mark.
+- Click, tap or Enter opens the viewer with all collage cuts and figures of the page, in the order they appear,
+  starting at the one you picked. It shows the figure number, the cut's `label` (or the figure number), the caption,
+  a `02 / 05` counter and thumbnails. Prev/next buttons, ←/→, Home/End and a horizontal swipe step through; `100%`
+  shows the image at full size (scrollable), `Fit` returns. Escape, the close button or a click outside closes it and
+  focus returns to the image you came from.
+- The viewer loads a larger optimized WebP (up to 2400 px wide, never upscaled beyond the original), not the original
+  file. Without JavaScript each image is simply a link to that large WebP.
+- `inspect={false}` on a `<Collage>` or `<Figure>` keeps it static and leaves it out of the gallery.
+- The cut name comes from `label` (fallback `C-01`, `C-02`, …) and the caption from the component's `caption`; write
+  `alt` text that still makes sense on its own, because it becomes part of the link's accessible name.
+
 ### `<Sidenote>`: margin note
 
 ```mdx

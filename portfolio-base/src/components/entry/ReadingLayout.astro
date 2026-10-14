@@ -5,7 +5,9 @@
  *   with sidenotes floating into the side column and `wide` figures spanning it;
  * - medium (>= 900px): reading column | side column, contents above the text;
  * - narrow: one column, sidenotes inline, contents above the text.
+ * It also hosts the page gallery viewer for collage cuts and figures.
  */
+import Gallery from '../content/Gallery.astro';
 interface Heading {
   depth: number;
   slug: string;
@@ -41,6 +43,7 @@ const toc = Astro.props.headings.filter((h) => h.depth === 2);
       <slot />
     </div>
   </div>
+  <Gallery />
 </div>
 
 <style>
