@@ -87,7 +87,7 @@
   --module-shadow: rgba(40, 38, 32, 0.22);
   --lamp: rgba(240, 110, 30, 0.3);
   --lamp-dots: rgba(255, 255, 255, 0.5);
-  --portrait-opacity: 0.9;
+  --portrait-opacity: 0.72;
   --blueprint: #2c5a98;
 }
 
@@ -126,7 +126,7 @@
   --module-shadow: rgba(40, 38, 32, 0.22);
     --lamp: rgba(240, 110, 30, 0.3);
     --lamp-dots: rgba(255, 255, 255, 0.5);
-    --portrait-opacity: 0.9;
+    --portrait-opacity: 0.72;
     --blueprint: #2c5a98;
   --blueprint: #2c5a98;
   }
