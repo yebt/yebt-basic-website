@@ -1,10 +1,13 @@
 ---
 /**
  * ASCII portrait confined to the home hero (absolute, behind the hero grid,
- * feathered towards the copy so the text and the actions lead). Cells resolve 40 -> 6 px in small
- * geometric steps; each step crossfades over the previous one and the
- * character ramp grows from 4 characters to the full ramp. The canvas fades
- * in once the portrait has loaded. Reduced motion: final frame, no fades.
+ * feathered towards the copy so the text and the actions lead).
+ * Cells resolve 40 -> 6 px in geometric steps. Every step draws a different
+ * density-ordered glyph set; its cells arrive in a staggered diagonal sweep,
+ * flicker through glyphs of similar density, then settle while the previous
+ * step fades out. Once settled, a sparse shimmer swaps a few cells now and
+ * then, paused while the tab is hidden or the hero is off screen.
+ * Reduced motion: final frame only, no fades, no shimmer.
  */
 import { getImage } from 'astro:assets';
 import portrait from '../assets/portrait.jpg';
@@ -47,185 +50,367 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
 
 <script>
   import {
-    CROSSFADE_MS,
+    FLICKER_MS,
+    SCRAMBLE_MS,
+    SETTLE_WINDOW_MS,
+    SHIMMER_HOLD_MS,
+    SHIMMER_TICK_MS,
     STEPS,
     STEP_MS,
-    charFor,
-    colorFor,
-    easeOut,
-    gridSize,
+    cellColor,
+    charIndexFor,
+    glyphSetForStep,
+    hash01,
     intensity,
     luminance,
     portraitPlacement,
-    rampForStep,
+    scrambleIndex,
+    settleDelay,
+    shimmerCount,
   } from '../lib/ascii';
+
+  /** One resolve step, prepared once per size and theme. All geometry in device pixels. */
+  interface Step {
+    index: number;
+    cs: number;
+    cols: number;
+    rows: number;
+    glyphs: string;
+    font: string;
+    /** White glyphs side by side, one cs x cs slot each; tinted later with `colors`. */
+    atlas: HTMLCanvasElement;
+    /** One pixel per cell holding the cell colour (alpha 255). */
+    colors: HTMLCanvasElement;
+    /** Active (non-empty) cells: grid id, target glyph, alpha, start delay and rgb. */
+    cells: Int32Array;
+    targets: Uint8Array;
+    alphas: Float32Array;
+    delays: Float32Array;
+    rgb: Uint8ClampedArray;
+  }
 
   const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-ascii]');
   const ctx = canvas?.getContext('2d');
 
   if (canvas && ctx && canvas.dataset.src) {
     const img = new Image();
-    const src = document.createElement('canvas');
-    const lo = document.createElement('canvas');
-    const sm = document.createElement('canvas');
+    const photo = document.createElement('canvas');
+    const under = document.createElement('canvas');
+    const sampler = document.createElement('canvas');
+    const layer = document.createElement('canvas');
+    const prevLayer = document.createElement('canvas');
+    const finalFrame = document.createElement('canvas');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const last = STEPS.length - 1;
+    const settleMs = SETTLE_WINDOW_MS + SCRAMBLE_MS;
 
-    // Two full-resolution frames: the one fully on screen and the one fading in over it.
-    let shown = document.createElement('canvas');
-    let incoming: HTMLCanvasElement | null = null;
-    let spare = document.createElement('canvas');
-    let current = 0;
+    let steps: Step[] = [];
+    let dpr = 1;
+    let dark = true;
     let raf = 0;
+    let settled = false;
+    let pageVisible = document.visibilityState === 'visible';
+    let heroVisible = true;
+    let shimmerTimer: number | undefined;
+    const shimmering = new Map<number, number>();
 
-    const isDark = () => document.documentElement.dataset.theme !== 'light';
-    const ready = () => img.complete && img.naturalWidth > 0;
+    const sized = (c: HTMLCanvasElement, w: number, h: number) => {
+      if (c.width !== w) c.width = w;
+      if (c.height !== h) c.height = h;
+      return c.getContext('2d');
+    };
 
-    /** Renders step `index` (blurred photo + characters) into `frame` at device resolution. */
-    const render = (frame: HTMLCanvasElement, index: number): boolean => {
+    /** Composites the feathered photo and its blurred underlay for the current size and theme. */
+    const preparePhoto = (): boolean => {
       const W = canvas.clientWidth;
       const H = canvas.clientHeight;
-      const f = frame.getContext('2d');
-      if (!W || !H || !f || !ready()) return false;
-      const size = STEPS[index];
-      const ramp = rampForStep(index, STEPS.length);
-      const dark = isDark();
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      frame.width = Math.round(W * dpr);
-      frame.height = Math.round(H * dpr);
-      f.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!W || !H || !img.naturalWidth) return false;
+      dark = document.documentElement.dataset.theme !== 'light';
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      const dw = Math.round(W * dpr);
+      const dh = Math.round(H * dpr);
+      sized(canvas, dw, dh);
+      sized(layer, dw, dh);
+      sized(prevLayer, dw, dh);
+      sized(finalFrame, dw, dh);
 
-      // 1. Composite the photo onto a viewport-sized source.
-      src.width = W;
-      src.height = H;
-      const s = src.getContext('2d');
-      if (!s) return false;
-      s.clearRect(0, 0, W, H);
+      const p = sized(photo, W, H);
+      if (!p) return false;
+      p.clearRect(0, 0, W, H);
       const place = portraitPlacement(W, H);
-      s.filter = dark ? 'none' : 'grayscale(0.15) contrast(1.05)';
-      s.drawImage(img, place.x, place.y, place.size, place.size);
-      s.filter = 'none';
+      p.filter = dark ? 'none' : 'grayscale(0.15) contrast(1.05)';
+      p.drawImage(img, place.x, place.y, place.size, place.size);
+      p.filter = 'none';
       // Feather the square photo into the hero surface: no hard edges, ever.
       const cx = place.x + place.size / 2;
       const cy = place.y + place.size * 0.45;
-      const feather = s.createRadialGradient(cx, cy, place.size * 0.28, cx, cy, place.size * 0.6);
+      const feather = p.createRadialGradient(cx, cy, place.size * 0.28, cx, cy, place.size * 0.6);
       feather.addColorStop(0, '#000');
       feather.addColorStop(1, 'rgba(0,0,0,0)');
-      s.globalCompositeOperation = 'destination-in';
-      s.fillStyle = feather;
-      s.fillRect(0, 0, W, H);
-      s.globalCompositeOperation = 'source-over';
+      p.globalCompositeOperation = 'destination-in';
+      p.fillStyle = feather;
+      p.fillRect(0, 0, W, H);
+      p.globalCompositeOperation = 'source-over';
 
-      // 2. Low-res blurred photo underneath the characters.
+      // Low-res blurred photo underneath the characters.
+      const lo = document.createElement('canvas');
       lo.width = 40;
       lo.height = Math.max(1, Math.round((40 * H) / W));
-      const l = lo.getContext('2d');
-      l?.clearRect(0, 0, lo.width, lo.height);
-      l?.drawImage(src, 0, 0, lo.width, lo.height);
-      f.clearRect(0, 0, W, H);
-      f.save();
-      f.imageSmoothingEnabled = true;
-      f.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(22px) brightness(1.08) saturate(0.55)';
-      f.globalAlpha = dark ? 1 : 0.6;
-      f.drawImage(lo, -40, -40, W + 80, H + 80);
-      f.restore();
-
-      // 3. One character per cell, sampled from a cols x rows downscale.
-      const { cols, rows } = gridSize(W, H, size);
-      sm.width = cols;
-      sm.height = rows;
-      const g = sm.getContext('2d', { willReadFrequently: true });
-      if (!g) return false;
-      g.drawImage(src, 0, 0, cols, rows);
-      const data = g.getImageData(0, 0, cols, rows).data;
-      f.font = `${Math.max(5, Math.round(size * 0.8))}px "Geist Mono", monospace`;
-      f.textAlign = 'center';
-      f.textBaseline = 'middle';
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const i = (r * cols + c) * 4;
-          const R = data[i];
-          const G = data[i + 1];
-          const B = data[i + 2];
-          // Outside the photo the source is transparent: leave the hero surface bare.
-          const A = data[i + 3];
-          if (A < 12) continue;
-          const lum = luminance(R, G, B);
-          const ch = charFor(lum, ramp, dark);
-          if (ch === ' ') continue;
-          f.fillStyle = colorFor(R, G, B, intensity(lum, dark), dark, A / 255);
-          f.fillText(ch, c * size + size / 2, r * size + size / 2);
-        }
-      }
+      lo.getContext('2d')?.drawImage(photo, 0, 0, lo.width, lo.height);
+      const u = sized(under, dw, dh);
+      if (!u) return false;
+      u.setTransform(dpr, 0, 0, dpr, 0, 0);
+      u.clearRect(0, 0, W, H);
+      u.imageSmoothingEnabled = true;
+      u.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(22px) brightness(1.08) saturate(0.55)';
+      u.globalAlpha = dark ? 1 : 0.6;
+      u.drawImage(lo, -40, -40, W + 80, H + 80);
+      u.filter = 'none';
+      u.globalAlpha = 1;
+      u.setTransform(1, 0, 0, 1, 0, 0);
+      steps = [];
       return true;
     };
 
-    /** Paints the shown frame, plus the incoming one at `alpha`, onto the visible canvas. */
-    const composite = (alpha: number) => {
-      if (canvas.width !== shown.width || canvas.height !== shown.height) {
-        canvas.width = shown.width;
-        canvas.height = shown.height;
+    /** Samples the photo for step `index`: glyph atlas, cell colours and the active cell list. */
+    const buildStep = (index: number): Step | null => {
+      if (steps[index]) return steps[index];
+      const cs = Math.max(3, Math.round(STEPS[index] * dpr));
+      const cols = Math.ceil(canvas.width / cs);
+      const rows = Math.ceil(canvas.height / cs);
+      const glyphs = glyphSetForStep(index, STEPS.length);
+      const n = glyphs.length;
+      const font = `${Math.max(5, Math.round(cs * 0.8))}px "Geist Mono", monospace`;
+
+      const g = sized(sampler, cols, rows);
+      if (!g) return null;
+      g.clearRect(0, 0, cols, rows);
+      g.drawImage(photo, 0, 0, (cols * cs) / dpr, (rows * cs) / dpr, 0, 0, cols, rows);
+      const data = g.getImageData(0, 0, cols, rows).data;
+
+      const colors = document.createElement('canvas');
+      colors.width = cols;
+      colors.height = rows;
+      const cctx = colors.getContext('2d');
+      if (!cctx) return null;
+      const tint = cctx.createImageData(cols, rows);
+      const cells: number[] = [];
+      const targets: number[] = [];
+      const alphas: number[] = [];
+      const delays: number[] = [];
+      const rgb: number[] = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const id = r * cols + c;
+          const i = id * 4;
+          const A = data[i + 3];
+          // Outside the photo the source is transparent: leave the hero surface bare.
+          if (A < 12) continue;
+          const lum = luminance(data[i], data[i + 1], data[i + 2]);
+          const target = charIndexFor(lum, n, dark);
+          if (target === 0) continue;
+          const [R, G, B, alpha] = cellColor(data[i], data[i + 1], data[i + 2], intensity(lum, dark), dark, A / 255);
+          tint.data[i] = R;
+          tint.data[i + 1] = G;
+          tint.data[i + 2] = B;
+          tint.data[i + 3] = 255;
+          cells.push(id);
+          targets.push(target);
+          alphas.push(alpha);
+          delays.push(settleDelay(c, r, cols, rows, SETTLE_WINDOW_MS));
+          rgb.push(R, G, B);
+        }
       }
+      cctx.putImageData(tint, 0, 0);
+
+      const atlas = document.createElement('canvas');
+      atlas.width = n * cs;
+      atlas.height = cs;
+      const a = atlas.getContext('2d');
+      if (!a) return null;
+      a.font = font;
+      a.fillStyle = '#fff';
+      a.textAlign = 'center';
+      a.textBaseline = 'middle';
+      for (let k = 1; k < n; k++) a.fillText(glyphs[k], k * cs + cs / 2, cs / 2);
+
+      const step: Step = {
+        index,
+        cs,
+        cols,
+        rows,
+        glyphs,
+        font,
+        atlas,
+        colors,
+        cells: Int32Array.from(cells),
+        targets: Uint8Array.from(targets),
+        alphas: Float32Array.from(alphas),
+        delays: Float32Array.from(delays),
+        rgb: Uint8ClampedArray.from(rgb),
+      };
+      steps[index] = step;
+      return step;
+    };
+
+    /**
+     * Draws `step` into `target` as it looks `t` ms after the step started:
+     * cells not yet reached stay empty, reached cells flicker through glyphs
+     * of similar density for SCRAMBLE_MS, then show their own glyph.
+     */
+    const drawGlyphs = (step: Step, t: number, target: HTMLCanvasElement) => {
+      const l = target.getContext('2d');
+      if (!l) return;
+      const { cs, cols, cells, targets, alphas, delays, atlas, glyphs } = step;
+      const n = glyphs.length;
+      l.setTransform(1, 0, 0, 1, 0, 0);
+      l.globalCompositeOperation = 'source-over';
+      l.clearRect(0, 0, target.width, target.height);
+      for (let j = 0; j < cells.length; j++) {
+        const since = t - delays[j];
+        if (since < 0) continue;
+        const id = cells[j];
+        const glyph =
+          since < SCRAMBLE_MS
+            ? scrambleIndex(targets[j], n, hash01(id, Math.floor(since / FLICKER_MS), step.index))
+            : targets[j];
+        l.globalAlpha = alphas[j];
+        l.drawImage(atlas, glyph * cs, 0, cs, cs, (id % cols) * cs, Math.floor(id / cols) * cs, cs, cs);
+      }
+      l.globalAlpha = 1;
+      // Tint the white glyphs with their cell colour, keeping each glyph's alpha.
+      l.globalCompositeOperation = 'source-in';
+      l.imageSmoothingEnabled = false;
+      l.drawImage(step.colors, 0, 0, step.cols * cs, step.rows * cs);
+      l.globalCompositeOperation = 'source-over';
+    };
+
+    /** Underlay, the fading previous step and the current step, onto the visible canvas. */
+    const compose = (prevAlpha: number) => {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalAlpha = 1;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(shown, 0, 0);
-      if (incoming && alpha > 0) {
-        ctx.globalAlpha = alpha;
-        ctx.drawImage(incoming, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(under, 0, 0);
+      if (prevAlpha > 0) {
+        ctx.globalAlpha = prevAlpha;
+        ctx.drawImage(prevLayer, 0, 0);
         ctx.globalAlpha = 1;
       }
+      ctx.drawImage(layer, 0, 0);
     };
 
-    /** Makes the incoming frame the shown one and recycles the old shown frame. */
-    const commit = () => {
-      if (!incoming) return;
-      spare = shown;
-      shown = incoming;
-      incoming = null;
-    };
-
-    /** Redraws the current step at once (resize, theme change, reduced motion). */
-    const redraw = () => {
-      incoming = null;
-      if (render(shown, current)) composite(0);
+    /** Shows the final step at rest and keeps a copy the shimmer restores cells from. */
+    const showFinal = () => {
+      const step = buildStep(last);
+      if (!step) return;
+      drawGlyphs(step, Infinity, layer);
+      compose(0);
+      finalFrame.getContext('2d')?.drawImage(canvas, 0, 0);
+      shimmering.clear();
+      settled = true;
+      syncShimmer();
     };
 
     const play = () => {
       cancelAnimationFrame(raf);
+      stopShimmer();
+      settled = false;
+      if (!preparePhoto()) return;
       if (reduceMotion.matches) {
-        current = last;
-        redraw();
+        showFinal();
         return;
       }
-      current = 0;
-      redraw();
+      let current = -1;
       let t0 = 0;
-      let fadeStart = 0;
       const frame = (now: number) => {
         if (!t0) t0 = now;
-        const target = Math.min(last, Math.floor((now - t0) / STEP_MS));
-        if (target !== current) {
-          commit();
-          current = target;
-          if (render(spare, current)) {
-            incoming = spare;
-            fadeStart = now;
-          }
+        const elapsed = now - t0;
+        const k = Math.min(last, Math.floor(elapsed / STEP_MS));
+        if (k !== current) {
+          // The step that just finished becomes the layer fading out underneath.
+          const done = current >= 0 ? buildStep(current) : null;
+          if (done) drawGlyphs(done, Infinity, prevLayer);
+          current = k;
         }
-        const alpha = incoming ? easeOut((now - fadeStart) / CROSSFADE_MS) : 0;
-        composite(alpha);
-        if (incoming && alpha >= 1) {
-          commit();
-          composite(0);
+        const step = buildStep(current);
+        if (!step) return;
+        const t = elapsed - current * STEP_MS;
+        if (current === last && t >= settleMs) {
+          showFinal();
+          return;
         }
-        if (current < last || incoming) raf = requestAnimationFrame(frame);
+        drawGlyphs(step, t, layer);
+        compose(current === 0 ? 0 : 1 - Math.min(1, t / settleMs));
+        raf = requestAnimationFrame(frame);
       };
       raf = requestAnimationFrame(frame);
     };
 
+    /* Idle shimmer: a few settled cells swap to a similar glyph for a moment. */
+    const restoreCell = (step: Step, j: number) => {
+      const id = step.cells[j];
+      const x = (id % step.cols) * step.cs;
+      const y = Math.floor(id / step.cols) * step.cs;
+      ctx.clearRect(x, y, step.cs, step.cs);
+      ctx.drawImage(finalFrame, x, y, step.cs, step.cs, x, y, step.cs, step.cs);
+    };
+
+    const tick = () => {
+      const step = steps[last];
+      if (!step || !step.cells.length) return;
+      const now = performance.now();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      for (const [j, until] of shimmering) {
+        if (until > now) continue;
+        restoreCell(step, j);
+        shimmering.delete(j);
+      }
+      ctx.font = step.font;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const count = shimmerCount(step.cells.length);
+      for (let k = 0; k < count; k++) {
+        const j = Math.floor(Math.random() * step.cells.length);
+        if (shimmering.has(j)) continue;
+        const id = step.cells[j];
+        const glyph = step.glyphs[scrambleIndex(step.targets[j], step.glyphs.length, Math.random())];
+        restoreCell(step, j);
+        ctx.globalAlpha = step.alphas[j];
+        ctx.fillStyle = `rgb(${step.rgb[j * 3]},${step.rgb[j * 3 + 1]},${step.rgb[j * 3 + 2]})`;
+        ctx.fillText(glyph, (id % step.cols) * step.cs + step.cs / 2, Math.floor(id / step.cols) * step.cs + step.cs / 2);
+        ctx.globalAlpha = 1;
+        shimmering.set(j, now + SHIMMER_HOLD_MS * (0.6 + Math.random() * 0.8));
+      }
+      shimmerTimer = window.setTimeout(tick, SHIMMER_TICK_MS);
+    };
+
+    function stopShimmer() {
+      window.clearTimeout(shimmerTimer);
+      shimmerTimer = undefined;
+      const step = steps[last];
+      if (step && settled) for (const j of shimmering.keys()) restoreCell(step, j);
+      shimmering.clear();
+    }
+
+    function syncShimmer() {
+      const run = settled && pageVisible && heroVisible && !reduceMotion.matches;
+      if (run && shimmerTimer === undefined) shimmerTimer = window.setTimeout(tick, SHIMMER_TICK_MS);
+      if (!run && shimmerTimer !== undefined) stopShimmer();
+    }
+
+    /** Resize and theme changes jump straight to the settled final frame. */
+    const redraw = () => {
+      cancelAnimationFrame(raf);
+      stopShimmer();
+      if (preparePhoto()) showFinal();
+    };
+
     let resizeTimer: number | undefined;
+    let lastWidth = canvas.clientWidth;
     window.addEventListener('resize', () => {
+      // Mobile browsers fire resize when the URL bar slides; only width changes need a redraw.
+      if (canvas.clientWidth === lastWidth && canvas.clientHeight === Math.round(canvas.height / dpr)) return;
+      lastWidth = canvas.clientWidth;
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(redraw, 150);
     });
@@ -234,6 +419,18 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       attributes: true,
       attributeFilter: ['data-theme'],
     });
+
+    document.addEventListener('visibilitychange', () => {
+      pageVisible = document.visibilityState === 'visible';
+      syncShimmer();
+    });
+
+    if ('IntersectionObserver' in window && canvas.parentElement) {
+      new IntersectionObserver((entries) => {
+        heroVisible = entries.some((entry) => entry.isIntersecting);
+        syncShimmer();
+      }).observe(canvas.parentElement);
+    }
 
     img.addEventListener('load', () => {
       const fontReady = document.fonts ? document.fonts.load('10px "Geist Mono"').catch(() => undefined) : Promise.resolve();
