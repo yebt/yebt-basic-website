@@ -14,6 +14,8 @@ interface Props {
   home?: boolean;
   /** Social preview image path; defaults to the Grid Console card. */
   image?: string;
+  /** Keeps the page out of search results (404). */
+  noindex?: boolean;
 }
 
 const {
@@ -21,6 +23,7 @@ const {
   description = 'Yahir Eduardo Bravo, software architect. Systems that stay clear, tested and easy to change, from the domain model to the interface.',
   home = false,
   image = '/og.png',
+  noindex = false,
 } = Astro.props;
 
 // Open Graph needs absolute URLs; they resolve only once `site` is set in astro.config.mjs.
@@ -36,6 +39,7 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="color-scheme" content="dark light" />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
