@@ -94,6 +94,8 @@ import ThemeToggle from './ThemeToggle.astro';
     min-height: 44px;
   }
   .tr {
+    /* Above the slab, so the phone menu panel drops over it. */
+    z-index: 3;
     padding: 14px 20px;
     display: flex;
     flex-wrap: wrap;
@@ -232,6 +234,16 @@ import ThemeToggle from './ThemeToggle.astro';
     .tl,
     .tr {
       padding: 8px 16px;
+    }
+    /* One row on phones: brand, the MENU disclosure and an icon theme toggle. */
+    .tr {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .tl {
+      display: flex;
+      align-items: center;
     }
     .bl {
       padding: 16px;

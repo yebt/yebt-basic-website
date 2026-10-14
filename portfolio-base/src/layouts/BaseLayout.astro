@@ -59,6 +59,7 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     <script is:inline>
       (function () {
         var root = document.documentElement;
+        root.classList.add('js');
         var stored = null;
         try {
           stored = localStorage.getItem('theme');
