@@ -13,6 +13,8 @@ interface Props {
   class?: string;
 }
 
+import { plant } from '../data/plant';
+
 const { variant = 'line', size = 24, accent = false, class: className } = Astro.props;
 ---
 
@@ -26,27 +28,26 @@ const { variant = 'line', size = 24, accent = false, class: className } = Astro.
       aria-hidden="true"
     >
       <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 29.5V10" />
-        <path d="M9 29.5h14" />
-        <path d="M15.6 22.4C11 23 6 20.5 4.4 14.2 10 13.6 14.8 16.6 15.6 22.4Z" />
-        <path d="M15.6 22.4 7.5 16.3" />
-        <path d="M16.4 16.4C21 17 26 14 27.6 7.8 22 7.2 17.2 10.4 16.4 16.4Z" />
-        <path d="M16.4 16.4 24.6 10" />
-        <path d="M16 9.6C14 8.1 13.4 5.2 16 2.4 18.6 5.2 18 8.1 16 9.6Z" />
+        <path d={plant.stem} />
+        <path d={plant.ground} />
+        <path d={plant.leafLow} />
+        <path d={plant.veinLow} />
+        <path d={plant.leafHigh} />
+        <path d={plant.veinHigh} />
+        <path d={plant.bud} />
       </g>
       <g class="nodes">
-        <circle cx="16" cy="22.4" r="1.4" />
-        <circle cx="16" cy="16.4" r="1.4" />
+        {plant.nodes.map(([cx, cy]) => <circle cx={cx} cy={cy} r="1.4" />)}
       </g>
     </svg>
   ) : (
     <svg class:list={['plant', className]} width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
       <g fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 29.5V10" fill="none" stroke-width="2.4" />
-        <path d="M10 29.5h12" fill="none" stroke-width="2.4" />
-        <path d="M15.6 22.4C11 23 6 20.5 4.4 14.2 10 13.6 14.8 16.6 15.6 22.4Z" />
-        <path d="M16.4 16.4C21 17 26 14 27.6 7.8 22 7.2 17.2 10.4 16.4 16.4Z" />
-        <path d="M16 9.6C14 8.1 13.4 5.2 16 2.4 18.6 5.2 18 8.1 16 9.6Z" />
+        <path d={plant.stem} fill="none" stroke-width="2.4" />
+        <path d={plant.groundSolid} fill="none" stroke-width="2.4" />
+        <path d={plant.leafLow} />
+        <path d={plant.leafHigh} />
+        <path d={plant.bud} />
       </g>
     </svg>
   )
