@@ -1,6 +1,6 @@
 ---
 import Hero from '../components/Hero.astro';
-import Rig from '../components/Rig.astro';
+import Actions from '../components/Actions.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import { cv } from '../data/cv';
@@ -59,8 +59,8 @@ const notes = (await getNotes()).slice(0, 4);
       <span class="lamp" aria-hidden="true"></span>
       <h2 id="contact-title" class="contact-title">Let's talk architecture.</h2>
       <p class="contact-mail"><a href={site.email}>{site.emailLabel}</a></p>
-      <Rig
-        class="contact-rig"
+      <Actions
+        class="contact-actions"
         label="Contact"
         actions={[
           { label: 'Email me', href: site.email, variant: 'tube' },
@@ -182,7 +182,7 @@ const notes = (await getNotes()).slice(0, 4);
   .contact-mail a:hover {
     color: var(--ink);
   }
-  .contact :global(.contact-rig) {
+  .contact :global(.contact-actions) {
     max-width: 760px;
     margin-top: 48px;
   }

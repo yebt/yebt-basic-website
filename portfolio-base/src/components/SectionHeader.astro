@@ -17,18 +17,8 @@ const Heading = level;
     href && linkLabel && (
       <a href={href} class="more">
         {linkLabel}
-        <svg class="lead" width="48" height="14" viewBox="0 0 48 14" aria-hidden="true" shape-rendering="crispEdges">
-          <rect class="rail" x="0" y="4" width="37" height="6" />
-          <rect class="rail-hi" x="0" y="4" width="37" height="1" />
-          <rect class="slot" x="0" y="6" width="37" height="2" />
-          <rect class="cable" x="0" y="6" width="6" height="2" />
-          <g class="carriage">
-            <rect class="edge" x="2" y="1" width="8" height="12" />
-            <rect class="face" x="3" y="2" width="6" height="10" />
-          </g>
-          <rect class="edge" x="36" y="1" width="12" height="12" />
-          <rect class="cube" x="37" y="2" width="10" height="10" />
-          <circle class="hole" cx="42" cy="7" r="2" shape-rendering="geometricPrecision" />
+        <svg class="lead" width="28" height="12" viewBox="0 0 28 12" aria-hidden="true">
+          <path d="M0 6h26M21 1l5 5-5 5" fill="none" stroke="currentColor" />
         </svg>
       </a>
     )
@@ -64,52 +54,17 @@ const Heading = level;
   .more:hover {
     color: var(--ink);
   }
-  /*
-   * A short profile rail ending in a cube connector. On hover or focus the
-   * carriage slides along the slot to the cube, drawing the orange cable with it.
-   */
+  /* A plain drawn arrow that steps forward on hover or focus. */
   .lead {
     flex: none;
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .rail {
-    fill: var(--steel);
-  }
-  .rail-hi {
-    fill: var(--steel-hi);
-  }
-  .slot,
-  .hole {
-    fill: var(--slot);
-  }
-  .edge {
-    fill: var(--steel-lo);
-  }
-  .cube {
-    fill: var(--steel);
-  }
-  .face {
-    fill: var(--steel-hi);
-  }
-  .cable {
-    fill: var(--cable);
-    transform-box: view-box;
-    transform-origin: 0 0;
-  }
-  .carriage,
-  .cable {
-    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .more:hover .carriage,
-  .more:focus-visible .carriage {
-    transform: translateX(24px);
-  }
-  .more:hover .cable,
-  .more:focus-visible .cable {
-    transform: scaleX(5);
+  .more:hover .lead,
+  .more:focus-visible .lead {
+    transform: translateX(4px);
   }
   @media (prefers-reduced-motion: reduce) {
-    .carriage,
-    .cable {
+    .lead {
       transition: none;
     }
   }
