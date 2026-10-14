@@ -160,17 +160,21 @@ export function gridSize(width: number, height: number, cell: number): { cols: n
   };
 }
 
+/** Horizontal centre of the face across the square source photo (0..1). */
+export const FACE_CENTER = 0.49;
+
 /**
- * Square portrait box inside the hero. Desktop: centred behind the frosted
- * centre slab and a little larger than the hero, so the face reads as blur
- * under the slab and as glyphs around its edges.
+ * Square portrait box inside the hero. Desktop: the face sits in the right
+ * third, beside the frosted slab, so it reads clearly while the copy leads;
+ * its right edge (cheek and ear, ~0.8 of the photo) never leaves the viewport.
  * Phones: centred horizontally near the top of the hero, above the slab,
  * never taller than 70% of the hero.
  */
 export function portraitPlacement(width: number, height: number): { size: number; x: number; y: number } {
   if (width >= DESKTOP_MIN_WIDTH) {
-    const size = height * 1.12;
-    return { size, x: (width - size) / 2, y: (height - size) / 2 };
+    const size = Math.min(height * 0.92, width * 0.62);
+    const x = Math.min(width * 0.8 - size * FACE_CENTER, width - size * 0.8);
+    return { size, x, y: (height - size) / 2 };
   }
   const size = Math.min(width * 1.02, height * 0.7);
   return { size, x: (width - size) / 2, y: height * 0.06 };

@@ -9,6 +9,7 @@ import {
   gridSize,
   luminance,
   portraitPlacement,
+  FACE_CENTER,
   stepSequence,
   easeOut,
   GLYPHS,
@@ -74,11 +75,17 @@ describe('gridSize', () => {
 });
 
 describe('portraitPlacement', () => {
-  it('centres the portrait behind the frosted slab on desktop, slightly larger than the hero', () => {
+  it('puts the face in the right third on desktop, beside the slab', () => {
     const { size, x, y } = portraitPlacement(1440, 900);
-    expect(size).toBeCloseTo(900 * 1.12);
-    expect(x + size / 2).toBeCloseTo(1440 / 2);
+    // The face sits at FACE_CENTER across the square source photo.
+    expect(x + size * FACE_CENTER).toBeCloseTo(1440 * 0.8);
+    expect(size).toBeLessThanOrEqual(900);
     expect(y + size / 2).toBeCloseTo(900 / 2);
+  });
+
+  it('keeps the whole face inside the viewport on a narrow desktop', () => {
+    const { size, x } = portraitPlacement(1024, 768);
+    expect(x + size * 0.8).toBeLessThanOrEqual(1024);
   });
 
   it('centres the portrait horizontally on phones, near the top of the hero', () => {
@@ -94,7 +101,7 @@ describe('portraitPlacement', () => {
   });
 
   it('treats the breakpoint width itself as desktop', () => {
-    expect(portraitPlacement(DESKTOP_MIN_WIDTH, 700).size).toBeCloseTo(700 * 1.12);
+    expect(portraitPlacement(DESKTOP_MIN_WIDTH, 700).x).toBeGreaterThan(DESKTOP_MIN_WIDTH / 3);
     expect(portraitPlacement(DESKTOP_MIN_WIDTH - 1, 1400).size).toBeCloseTo((DESKTOP_MIN_WIDTH - 1) * 1.02);
   });
 });
