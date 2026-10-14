@@ -2,8 +2,8 @@
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getProjects, projectCode, type Project } from '../../lib/collections';
-import { youtubeEmbedUrl } from '../../lib/youtube';
 import Link from '../../components/Link.astro';
+import VideoFacade from '../../components/VideoFacade.astro';
 
 export async function getStaticPaths() {
   const projects = await getProjects();
@@ -16,7 +16,6 @@ interface Props {
 const { project } = Astro.props;
 const { title, summary, year, arch, stack, video, playlist, videoLabel, repo, live } = project.data;
 const { Content } = await render(project);
-const embed = video ? youtubeEmbedUrl(video) : undefined;
 ---
 
 <BaseLayout title={`${title} — Yahir Eduardo Bravo`} description={summary}>
@@ -35,37 +34,9 @@ const embed = video ? youtubeEmbedUrl(video) : undefined;
       </dl>
       <p class="summary">{summary}</p>
 
-      {
-        embed && (
-          <figure class="video">
-            <iframe
-              src={embed}
-              title={`${title}: ${videoLabel}`}
-              loading="lazy"
-              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              referrerpolicy="strict-origin-when-cross-origin"
-            />
-            <figcaption>{videoLabel}</figcaption>
-          </figure>
-        )
-      }
+      <VideoFacade class="feature" title={title} label={videoLabel} video={video} playlist={playlist} />
 
       <div class="links">
-        {
-          video && !embed && (
-            <Link class="btn" href={video}>
-              WATCH · {videoLabel}
-            </Link>
-          )
-        }
-        {
-          playlist && (
-            <Link class="btn btn--solid" href={playlist}>
-              OPEN PLAYLIST · {videoLabel}
-            </Link>
-          )
-        }
         {
           repo && (
             <Link class="btn" href={repo}>
@@ -138,21 +109,8 @@ const embed = video ? youtubeEmbedUrl(video) : undefined;
     font-size: 17px;
     line-height: 1.55;
   }
-  .video {
-    margin: 0 0 24px;
-    border: 1px solid var(--line-strong);
-  }
-  .video iframe {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    border: 0;
-  }
-  .video figcaption {
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--mute);
-    border-top: 1px solid var(--line);
+  .project :global(.feature) {
+    margin-bottom: 24px;
   }
   .links {
     display: flex;
