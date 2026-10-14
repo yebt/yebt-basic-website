@@ -34,6 +34,14 @@
   --tube-off: #8a9097;
   /* Dark recess of an aluminium profile slot or a bolt hole. */
   --slot: #0b0c0c;
+  /* Frosted acrylic modules: tint, inner light and the polished top edge. */
+  --acrylic: rgba(27, 28, 27, 0.58);
+  --acrylic-light: rgba(236, 236, 230, 0.055);
+  --acrylic-edge: rgba(255, 255, 255, 0.06);
+  --module-shadow: rgba(0, 0, 0, 0.55);
+  /* Warm perforated lamp (contact module). */
+  --lamp: rgba(255, 128, 52, 0.42);
+  --lamp-dots: rgba(255, 236, 214, 0.34);
   --portrait-opacity: 0.7;
   /* Blueprint construction lines (hero mark animation). */
   --blueprint: #7ea6dc;
@@ -41,6 +49,9 @@
   --font-display: 'Share Tech Mono', ui-monospace, monospace;
   --font-body: 'Geist Mono', ui-monospace, monospace;
   --gutter: clamp(20px, 4vw, 48px);
+  /* Module frame: inset from the viewport edge, gap between modules, cube size. */
+  --module-inset: clamp(12px, 2.4vw, 32px);
+  --module-gap: clamp(28px, 4vw, 48px);
 }
 
 :root[data-theme='light'] {
@@ -70,6 +81,12 @@
   --tube-haze: rgba(150, 190, 255, 0.18);
   --tube-off: #b7bcc2;
   --slot: #34383c;
+  --acrylic: rgba(238, 237, 232, 0.56);
+  --acrylic-light: rgba(255, 255, 255, 0.55);
+  --acrylic-edge: rgba(255, 255, 255, 0.7);
+  --module-shadow: rgba(40, 38, 32, 0.22);
+  --lamp: rgba(240, 110, 30, 0.3);
+  --lamp-dots: rgba(255, 255, 255, 0.5);
   --portrait-opacity: 0.9;
   --blueprint: #2c5a98;
 }
@@ -102,6 +119,13 @@
     --tube-haze: rgba(150, 190, 255, 0.18);
     --tube-off: #b7bcc2;
     --slot: #34383c;
+    --acrylic: rgba(238, 237, 232, 0.56);
+    --acrylic-light: rgba(255, 255, 255, 0.55);
+    --acrylic-edge: rgba(255, 255, 255, 0.7);
+    --module-shadow: rgba(40, 38, 32, 0.22);
+  --module-shadow: rgba(40, 38, 32, 0.22);
+    --lamp: rgba(240, 110, 30, 0.3);
+    --lamp-dots: rgba(255, 255, 255, 0.5);
     --portrait-opacity: 0.9;
     --blueprint: #2c5a98;
   --blueprint: #2c5a98;
@@ -321,11 +345,74 @@ iframe {
   }
 }
 
-/* Section frame shared by home sections and inner pages */
+/*
+ * Modules: every section (home) or page body (inner pages) is a frosted
+ * acrylic panel over the concrete, with an inner light from the top and a
+ * polished top edge. Machined cube connectors sit on its four corners and
+ * consecutive modules are joined by aluminium profile rails along their sides.
+ */
 .panel {
   position: relative;
-  border-top: 1px solid var(--line);
-  padding: 88px var(--gutter);
+  margin-inline: var(--module-inset);
+  padding: clamp(36px, 6vw, 80px) var(--gutter);
+  border: 1px solid var(--line-strong);
+  background:
+    radial-gradient(120% 70% at 50% 0%, var(--acrylic-light), transparent 70%),
+    var(--acrylic);
+  box-shadow:
+    inset 0 1px 0 var(--acrylic-edge),
+    0 16px 32px -24px var(--module-shadow);
+  -webkit-backdrop-filter: blur(10px) saturate(0.85);
+  backdrop-filter: blur(10px) saturate(0.85);
+}
+main.panel {
+  margin-block: var(--module-gap);
+}
+/* Cube connectors on the corners: frame, machined face, bolt hole. */
+.panel::before {
+  --hole: radial-gradient(circle at center, var(--slot) 0 2px, var(--steel-lo) 2.5px 3px, transparent 3.5px);
+  --face: linear-gradient(135deg, var(--steel-hi), var(--steel) 60%, var(--steel-lo));
+  --edge: linear-gradient(var(--steel-lo), var(--steel-lo));
+  content: '';
+  position: absolute;
+  /* Offsets are from the padding box: each 15px cube is centred on the 1px border corner. */
+  inset: -9px;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    var(--hole) left top / 15px 15px no-repeat,
+    var(--hole) right top / 15px 15px no-repeat,
+    var(--hole) left bottom / 15px 15px no-repeat,
+    var(--hole) right bottom / 15px 15px no-repeat,
+    var(--face) left 1px top 1px / 13px 13px no-repeat,
+    var(--face) right 1px top 1px / 13px 13px no-repeat,
+    var(--face) left 1px bottom 1px / 13px 13px no-repeat,
+    var(--face) right 1px bottom 1px / 13px 13px no-repeat,
+    var(--edge) left top / 15px 15px no-repeat,
+    var(--edge) right top / 15px 15px no-repeat,
+    var(--edge) left bottom / 15px 15px no-repeat,
+    var(--edge) right bottom / 15px 15px no-repeat;
+}
+/* Profile rails in the gap between two modules, on both sides. */
+.panel + .panel::after {
+  --profile: linear-gradient(
+    to right,
+    var(--steel-lo) 0 1px,
+    var(--steel) 1px 3px,
+    var(--slot) 3px 6px,
+    var(--steel) 6px 8px,
+    var(--steel-hi) 8px 9px
+  );
+  content: '';
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  bottom: calc(100% + 9px);
+  height: calc(var(--module-gap) - 15px);
+  pointer-events: none;
+  background:
+    var(--profile) left top / 9px 100% no-repeat,
+    var(--profile) right top / 9px 100% no-repeat;
 }
 .panel h2 {
   margin: 0;
