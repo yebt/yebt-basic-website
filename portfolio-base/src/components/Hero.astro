@@ -3,7 +3,7 @@
  * Home hero: 3x3 hairline grid. Doubles as the page banner (logo, nav, theme)
  * and holds the h1. Cells marked .e are empty spacers hidden on small screens.
  */
-import { cv } from '../data/cv';
+import { cv, cvPage } from '../data/cv';
 import { site } from '../data/site';
 import Actions from './Actions.astro';
 import Link from './Link.astro';
@@ -65,6 +65,7 @@ const scope = [
       <p class="elsewhere">
         <Link href={site.github} rel="me">GITHUB {site.githubLabel}</Link>
         <Link href={site.linkedin} rel="me">LINKEDIN</Link>
+        <Link href={cvPage}>CV (WEB)</Link>
       </p>
       <h1 class="name"><span class="caret" aria-hidden="true"></span>{site.name} — {site.role}</h1>
     </div>

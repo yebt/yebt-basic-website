@@ -38,8 +38,6 @@ export interface Role extends Period {
   highlights: string[];
   /** Indexes into `highlights` for the short home timeline (2–3). */
   featured: number[];
-  /** Tools named in this role's own description. */
-  tools?: string[];
 }
 
 export interface SkillGroup {
@@ -102,7 +100,6 @@ export const experience: Role[] = [
       'Improved SEO and Lighthouse scores on key landing pages through component rewrites and performance audits.',
     ],
     featured: [1, 2, 3],
-    tools: ['Docker', 'Sentry', 'Telegram', 'SQL'],
   },
   {
     title: 'Junior Developer',
@@ -123,7 +120,6 @@ export const experience: Role[] = [
       'Contributed to performance and usability improvements in the e-commerce and event platforms.',
     ],
     featured: [0, 1, 2],
-    tools: ['Docker', 'Sentry'],
   },
   {
     title: 'Private Tutor, Mathematics and Programming',

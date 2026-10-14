@@ -3,7 +3,7 @@ import Hero from '../components/Hero.astro';
 import Actions from '../components/Actions.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SectionHeader from '../components/SectionHeader.astro';
-import { cv } from '../data/cv';
+import { cv, cvPage } from '../data/cv';
 import { practice, site } from '../data/site';
 import { getNotes, getProjects, noteHref } from '../lib/collections';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -65,6 +65,7 @@ const notes = (await getNotes()).slice(0, 4);
         actions={[
           { label: 'Email me', href: site.email, variant: 'tube' },
           cv,
+          { label: 'CV (web)', href: cvPage },
           { label: `GitHub ${site.githubLabel}`, href: site.github, rel: 'me' },
           { label: 'LinkedIn', href: site.linkedin, rel: 'me' },
         ]}

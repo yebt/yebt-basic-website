@@ -94,3 +94,31 @@ player only when the visitor presses play. `playlist` renders a link card instea
 
 `src/assets/placeholders/*.jpg` are generated textures used by the sample entries (`ledger-core.mdx`,
 `screaming-architecture.mdx`). Replace them with real images and delete the folder when nothing imports it.
+
+## CV
+
+`src/data/cv.ts` is the single source for the CV: basics, summary, experience (month ranges as `YYYY-MM`, no `end`
+while the role is current), skills, education, courses and languages. The `/cv` page, the PDF, the home Experience
+module and the `Person` JSON-LD all read from it, so edit facts there only.
+
+- Durations count the start and the end month (Oct 2024 – Jun 2025 is 9 months), the convention LinkedIn and most CVs
+  use. A current role runs to the month of the build.
+- Years of experience add up the months of the software roles (`software: true`), counting overlapping months once.
+  The figure is whole years rounded down, with a `+` when months are left over (47 months -> "3+ years", 48 ->
+  "4 years"). Teaching is listed but not counted.
+- `featured` picks the 2–3 highlights the home timeline shows for each role.
+
+### Regenerating the PDF
+
+`public/cv.pdf` is printed from the `/cv` page; rerun it whenever the CV data changes:
+
+```sh
+npm run cv:pdf
+```
+
+It builds the site, serves `dist/` on a local port, prints `/cv/` with headless Chrome using the page's print
+stylesheet (Letter, black on white, standard sans) and writes `public/cv.pdf` (also copied into `dist/`). The text stays
+selectable, so applicant tracking systems can parse it; check with `pdftotext public/cv.pdf -`. Chrome is looked up in
+the usual install paths; set `CHROME_PATH` otherwise. `--no-build` reuses an existing `dist/`. Commit the new PDF.
+
+While `public/cv.pdf` exists the site's CV actions download it; without it they fall back to LinkedIn.
