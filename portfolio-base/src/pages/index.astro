@@ -1,5 +1,6 @@
 ---
 import Hero from '../components/Hero.astro';
+import Rig from '../components/Rig.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import { practice, site } from '../data/site';
@@ -37,7 +38,7 @@ const notes = (await getNotes()).slice(0, 4);
 
     <section id="garden" class="panel" aria-labelledby="garden-title">
       <SectionHeader id="garden-title" title="Garden" href="/garden/" linkLabel="ALL NOTES" />
-      <ul class="notes frost-card">
+      <ul class="notes slab">
         {
           notes.map((note) => (
             <li>
@@ -55,12 +56,17 @@ const notes = (await getNotes()).slice(0, 4);
 
     <section id="contact" class="panel contact" aria-labelledby="contact-title">
       <h2 id="contact-title" class="contact-title">Let's talk architecture.</h2>
-      <div class="actions">
-        <a class="btn btn--solid" href={site.email}>{site.emailLabel}</a>
-        <a class="btn" href={site.cv}>DOWNLOAD CV</a>
-        <a class="btn" href={site.github} rel="me">GITHUB {site.githubLabel}</a>
-        <a class="btn" href={site.linkedin} rel="me">LINKEDIN</a>
-      </div>
+      <p class="contact-mail"><a href={site.email}>{site.emailLabel}</a></p>
+      <Rig
+        class="contact-rig"
+        label="Contact"
+        actions={[
+          { label: 'Email me', href: site.email, variant: 'tube' },
+          { label: 'Download CV', href: site.cv },
+          { label: `GitHub ${site.githubLabel}`, href: site.github, rel: 'me' },
+          { label: 'LinkedIn', href: site.linkedin, rel: 'me' },
+        ]}
+      />
     </section>
   </main>
 </BaseLayout>
@@ -129,16 +135,18 @@ const notes = (await getNotes()).slice(0, 4);
     line-height: 1.1;
     letter-spacing: 0.03em;
   }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 40px;
+  .contact-mail {
+    margin: 20px 0 0;
+    font-size: 16px;
+    color: var(--mute);
+    overflow-wrap: anywhere;
   }
-  .actions .btn {
-    min-height: 48px;
-    padding: 0 22px;
-    font-size: 15px;
+  .contact-mail a:hover {
+    color: var(--ink);
+  }
+  .contact :global(.contact-rig) {
+    max-width: 760px;
+    margin-top: 48px;
   }
 
   @media (max-width: 820px) {

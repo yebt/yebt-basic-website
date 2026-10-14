@@ -1,5 +1,5 @@
 ---
-/** Rustic frosted project card. Presentational: receives a project entry. */
+/** Concrete slab project card. Presentational: receives a project entry. */
 import { projectCode, projectHref, type Project } from '../lib/collections';
 
 interface Props {
@@ -11,7 +11,7 @@ const { title, summary, year, arch, stack, videoLabel, cover } = project.data;
 const Heading = headingLevel;
 ---
 
-<article class="card frost-card" data-stack={stack.join('|')}>
+<article class="card slab" data-stack={stack.join('|')}>
   <div class="meta"><span>{projectCode(project)}</span><span>{arch}</span><span>{year}</span></div>
   <div class="cover">
     {cover ? <img src={cover} alt="" loading="lazy" /> : <span>[COVER]</span>}

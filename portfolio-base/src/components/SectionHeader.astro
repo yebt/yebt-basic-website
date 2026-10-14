@@ -17,8 +17,11 @@ const Heading = level;
     href && linkLabel && (
       <a href={href} class="more">
         {linkLabel}
-        <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true">
-          <path d="M0 5h14M10 1l4 4-4 4" fill="none" stroke="currentColor" />
+        <svg class="lead" width="44" height="14" viewBox="0 0 44 14" aria-hidden="true">
+          <circle class="pulley" cx="7" cy="7" r="5.5" />
+          <circle class="axle" cx="7" cy="7" r="1.6" />
+          <path class="cable" d="M7 1.5h30" />
+          <path d="M36 2.5l4.5 4.5-4.5 4.5" fill="none" stroke="currentColor" />
         </svg>
       </a>
     )
@@ -53,5 +56,25 @@ const Heading = level;
   }
   .more:hover {
     color: var(--ink);
+  }
+  /* A short run of cable over a pulley leads into the arrow. */
+  .lead {
+    overflow: visible;
+  }
+  .lead .pulley {
+    fill: var(--steel);
+    stroke: var(--steel-lo);
+  }
+  .lead .axle {
+    fill: var(--steel-hi);
+  }
+  .lead .cable {
+    fill: none;
+    stroke: var(--cable);
+    stroke-width: 2;
+    transition: d 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .more:hover .cable {
+    d: path('M7 1.5h33');
   }
 </style>

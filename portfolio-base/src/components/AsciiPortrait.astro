@@ -163,7 +163,7 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       u.clearRect(0, 0, W, H);
       u.imageSmoothingEnabled = true;
       u.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(22px) brightness(1.08) saturate(0.55)';
-      u.globalAlpha = dark ? 1 : 0.6;
+      u.globalAlpha = dark ? 0.85 : 0.35;
       u.drawImage(lo, -40, -40, W + 80, H + 80);
       u.filter = 'none';
       u.globalAlpha = 1;
