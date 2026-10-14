@@ -101,11 +101,17 @@ import ThemeToggle from './ThemeToggle.astro';
     gap: 4px 22px;
     font-size: 15px;
   }
+  /*
+   * Frosted centre slab: the portrait sits behind it, so the face reads as a
+   * blurred presence under the copy and as crisp glyphs around its edges.
+   */
   .center {
     display: flex;
     align-items: center;
     padding: 40px var(--gutter);
     background: var(--frost);
+    -webkit-backdrop-filter: blur(14px) saturate(0.7);
+    backdrop-filter: blur(14px) saturate(0.7);
   }
   .intro {
     width: 100%;
@@ -205,6 +211,22 @@ import ThemeToggle from './ThemeToggle.astro';
     .c {
       grid-column: 1 / -1;
       border-right: 0;
+    }
+    /* Phones: the face stays clear at the top; the slab hugs the copy below it. */
+    .center {
+      align-items: flex-end;
+      padding: 16px;
+      background: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .intro {
+      font-size: 17px;
+      padding: 22px 20px 8px;
+      border: 1px solid var(--line-strong);
+      background: var(--frost);
+      -webkit-backdrop-filter: blur(14px) saturate(0.7);
+      backdrop-filter: blur(14px) saturate(0.7);
     }
     .tl,
     .tr {

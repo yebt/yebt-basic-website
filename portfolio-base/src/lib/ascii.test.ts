@@ -23,6 +23,8 @@ import {
   scrambleIndex,
   settleDelay,
   shimmerCount,
+  levels,
+  stretch,
 } from './ascii';
 
 describe('luminance', () => {
@@ -72,25 +74,62 @@ describe('gridSize', () => {
 });
 
 describe('portraitPlacement', () => {
-  it('sits in the right part of the hero, bottom aligned and no taller than the hero, on desktop', () => {
+  it('centres the portrait behind the frosted slab on desktop, slightly larger than the hero', () => {
     const { size, x, y } = portraitPlacement(1440, 900);
-    expect(size).toBeCloseTo(900 * 0.86);
-    expect(x).toBeCloseTo(1440 - size * 0.92);
-    expect(y).toBeCloseTo(900 - size);
-    // Leaves the left half of the hero to the copy and the actions.
-    expect(x).toBeGreaterThan(1440 / 2);
+    expect(size).toBeCloseTo(900 * 1.12);
+    expect(x + size / 2).toBeCloseTo(1440 / 2);
+    expect(y + size / 2).toBeCloseTo(900 / 2);
   });
 
-  it('shrinks and shifts right below the desktop breakpoint', () => {
+  it('centres the portrait horizontally on phones, near the top of the hero', () => {
     const { size, x, y } = portraitPlacement(390, 844);
-    expect(size).toBeCloseTo(390 * 0.95);
-    expect(x).toBeCloseTo(390 - size * 0.82);
-    expect(y).toBeCloseTo(844 - size * 0.9);
+    expect(size).toBeCloseTo(390 * 1.02);
+    expect(x + size / 2).toBeCloseTo(390 / 2);
+    expect(y).toBeCloseTo(844 * 0.06);
+  });
+
+  it('never lets the phone portrait outgrow the hero height', () => {
+    const { size } = portraitPlacement(700, 600);
+    expect(size).toBeLessThanOrEqual(600 * 0.7);
   });
 
   it('treats the breakpoint width itself as desktop', () => {
-    expect(portraitPlacement(DESKTOP_MIN_WIDTH, 700).size).toBeCloseTo(700 * 0.86);
-    expect(portraitPlacement(DESKTOP_MIN_WIDTH - 1, 700).size).toBeCloseTo((DESKTOP_MIN_WIDTH - 1) * 0.95);
+    expect(portraitPlacement(DESKTOP_MIN_WIDTH, 700).size).toBeCloseTo(700 * 1.12);
+    expect(portraitPlacement(DESKTOP_MIN_WIDTH - 1, 1400).size).toBeCloseTo((DESKTOP_MIN_WIDTH - 1) * 1.02);
+  });
+});
+
+describe('levels', () => {
+  it('returns the low and high quantiles of the values', () => {
+    const values = Array.from({ length: 101 }, (_, i) => i / 100);
+    const { lo, hi } = levels(values, 0.05, 0.95);
+    expect(lo).toBeCloseTo(0.05);
+    expect(hi).toBeCloseTo(0.95);
+  });
+
+  it('ignores the order of the input', () => {
+    expect(levels([0.9, 0.1, 0.5], 0, 1)).toEqual({ lo: 0.1, hi: 0.9 });
+  });
+
+  it('falls back to the full range for an empty input', () => {
+    expect(levels([], 0.05, 0.95)).toEqual({ lo: 0, hi: 1 });
+  });
+});
+
+describe('stretch', () => {
+  it('maps lo to 0 and hi to 1, linearly in between', () => {
+    expect(stretch(0.2, 0.2, 0.6)).toBe(0);
+    expect(stretch(0.6, 0.2, 0.6)).toBe(1);
+    expect(stretch(0.4, 0.2, 0.6)).toBeCloseTo(0.5);
+  });
+
+  it('clamps values outside the range', () => {
+    expect(stretch(0.05, 0.2, 0.6)).toBe(0);
+    expect(stretch(0.9, 0.2, 0.6)).toBe(1);
+  });
+
+  it('leaves the value as is when the range is degenerate', () => {
+    expect(stretch(0.3, 0.5, 0.5)).toBe(0.3);
   });
 });
 
@@ -102,11 +141,12 @@ describe('colorFor', () => {
 
   it('scales the alpha by the sampled coverage so the portrait edge feathers out', () => {
     expect(colorFor(255, 255, 255, 1, true, 0.5)).toBe('rgba(255,255,255,0.50)');
-    expect(colorFor(200, 100, 50, 0.5, false, 0.5)).toBe('rgba(110,50,24,0.30)');
+    expect(colorFor(200, 100, 50, 1, false, 0.5)).toBe('rgba(76,36,18,0.50)');
   });
 
-  it('darkens the source colour on the light theme', () => {
-    expect(colorFor(200, 100, 50, 0.5, false)).toBe('rgba(110,50,24,0.60)');
+  it('inks the light theme with a deep tone of the source colour and a visible alpha floor', () => {
+    expect(colorFor(200, 100, 50, 0, false)).toBe('rgba(76,36,18,0.40)');
+    expect(colorFor(200, 100, 50, 1, false)).toBe('rgba(76,36,18,1.00)');
   });
 });
 
@@ -269,10 +309,10 @@ describe('settleDelay', () => {
 describe('cellColor', () => {
   it('returns the channels colorFor serialises', () => {
     expect(cellColor(100, 100, 100, 0, true)).toEqual([153, 132, 113, 0.22]);
-    expect(colorFor(200, 100, 50, 0.5, false, 0.5)).toBe('rgba(110,50,24,0.30)');
-    const [r, g, b, a] = cellColor(200, 100, 50, 0.5, false, 0.5);
-    expect([r, g, b]).toEqual([110, 50, 24]);
-    expect(a).toBeCloseTo(0.3);
+    expect(colorFor(200, 100, 50, 1, false, 0.5)).toBe('rgba(76,36,18,0.50)');
+    const [r, g, b, a] = cellColor(200, 100, 50, 1, false, 0.5);
+    expect([r, g, b]).toEqual([76, 36, 18]);
+    expect(a).toBeCloseTo(0.5);
   });
 });
 

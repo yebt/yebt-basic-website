@@ -1,7 +1,9 @@
 ---
 /**
- * ASCII portrait confined to the home hero (absolute, behind the hero grid,
- * feathered towards the copy so the text and the actions lead).
+ * ASCII portrait confined to the home hero (absolute, behind the hero grid).
+ * Desktop: centred behind the frosted centre slab. Phones: centred above it.
+ * Light theme stretches the photo's tones to the full range, so the dim
+ * source still reads as a portrait in deep, source-coloured ink.
  * Cells resolve 40 -> 6 px in geometric steps. Every step draws a different
  * density-ordered glyph set; its cells arrive in a staggered diagonal sweep,
  * flicker through glyphs of similar density, then settle while the previous
@@ -27,9 +29,6 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
     height: 100%;
     opacity: 0;
     pointer-events: none;
-    /* Feather the portrait towards the copy on the left. */
-    -webkit-mask-image: linear-gradient(to right, transparent 38%, #000 72%);
-    mask-image: linear-gradient(to right, transparent 38%, #000 72%);
   }
   .ascii.is-ready {
     opacity: var(--portrait-opacity, 0.6);
@@ -37,8 +36,9 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
   }
   @media (max-width: 819px) {
     .ascii {
-      -webkit-mask-image: linear-gradient(to bottom, transparent 30%, #000 70%);
-      mask-image: linear-gradient(to bottom, transparent 30%, #000 70%);
+      /* Phones: the face sits at the top; fade it out behind the slab below. */
+      -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
+      mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -62,11 +62,13 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
     glyphSetForStep,
     hash01,
     intensity,
+    levels,
     luminance,
     portraitPlacement,
     scrambleIndex,
     settleDelay,
     shimmerCount,
+    stretch,
   } from '../lib/ascii';
 
   /** One resolve step, prepared once per size and theme. All geometry in device pixels. */
@@ -142,14 +144,19 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       p.drawImage(img, place.x, place.y, place.size, place.size);
       p.filter = 'none';
       // Feather the square photo into the hero surface: no hard edges, ever.
+      // An ellipse around the head, so the wall behind it falls away first.
       const cx = place.x + place.size / 2;
-      const cy = place.y + place.size * 0.45;
-      const feather = p.createRadialGradient(cx, cy, place.size * 0.28, cx, cy, place.size * 0.6);
+      const cy = place.y + place.size * 0.48;
+      const feather = p.createRadialGradient(0, 0, place.size * 0.3, 0, 0, place.size * 0.58);
       feather.addColorStop(0, '#000');
       feather.addColorStop(1, 'rgba(0,0,0,0)');
+      p.save();
+      p.translate(cx, cy);
+      p.scale(0.8, 1);
       p.globalCompositeOperation = 'destination-in';
       p.fillStyle = feather;
-      p.fillRect(0, 0, W, H);
+      p.fillRect(-cx / 0.8, -cy, W / 0.8, H);
+      p.restore();
       p.globalCompositeOperation = 'source-over';
 
       // Low-res blurred photo underneath the characters.
@@ -162,8 +169,9 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       u.setTransform(dpr, 0, 0, dpr, 0, 0);
       u.clearRect(0, 0, W, H);
       u.imageSmoothingEnabled = true;
-      u.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(22px) brightness(1.08) saturate(0.55)';
-      u.globalAlpha = dark ? 0.85 : 0.35;
+      // Light theme: a lighter, soft tonal portrait under the darker glyphs.
+      u.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(18px) brightness(1.7) contrast(0.85) saturate(0.6)';
+      u.globalAlpha = dark ? 0.85 : 0.55;
       u.drawImage(lo, -40, -40, W + 80, H + 80);
       u.filter = 'none';
       u.globalAlpha = 1;
@@ -199,6 +207,16 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       const alphas: number[] = [];
       const delays: number[] = [];
       const rgb: number[] = [];
+      // Light theme: stretch the dim photo's tones over the covered cells to the full range.
+      let lo = 0;
+      let hi = 1;
+      if (!dark) {
+        const lums: number[] = [];
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] >= 12) lums.push(luminance(data[i], data[i + 1], data[i + 2]));
+        }
+        ({ lo, hi } = levels(lums, 0.04, 0.97));
+      }
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const id = r * cols + c;
@@ -206,7 +224,7 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
           const A = data[i + 3];
           // Outside the photo the source is transparent: leave the hero surface bare.
           if (A < 12) continue;
-          const lum = luminance(data[i], data[i + 1], data[i + 2]);
+          const lum = dark ? luminance(data[i], data[i + 1], data[i + 2]) : stretch(luminance(data[i], data[i + 1], data[i + 2]), lo, hi);
           const target = charIndexFor(lum, n, dark);
           if (target === 0) continue;
           const [R, G, B, alpha] = cellColor(data[i], data[i + 1], data[i + 2], intensity(lum, dark), dark, A / 255);

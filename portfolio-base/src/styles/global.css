@@ -32,7 +32,7 @@
   --tube-glow: rgba(190, 218, 255, 0.5);
   --tube-haze: rgba(170, 205, 255, 0.16);
   --tube-off: #8a9097;
-  --portrait-opacity: 0.6;
+  --portrait-opacity: 0.7;
 
   --font-display: 'Share Tech Mono', ui-monospace, monospace;
   --font-body: 'Geist Mono', ui-monospace, monospace;
@@ -65,7 +65,7 @@
   --tube-glow: rgba(150, 190, 255, 0.55);
   --tube-haze: rgba(150, 190, 255, 0.18);
   --tube-off: #b7bcc2;
-  --portrait-opacity: 0.55;
+  --portrait-opacity: 0.9;
 }
 
 @media (prefers-color-scheme: light) {
@@ -95,7 +95,7 @@
     --tube-glow: rgba(150, 190, 255, 0.55);
     --tube-haze: rgba(150, 190, 255, 0.18);
     --tube-off: #b7bcc2;
-    --portrait-opacity: 0.55;
+    --portrait-opacity: 0.9;
   }
 }
 

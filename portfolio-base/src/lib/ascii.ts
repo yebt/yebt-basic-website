@@ -161,17 +161,36 @@ export function gridSize(width: number, height: number, cell: number): { cols: n
 }
 
 /**
- * Square portrait box inside the hero. Desktop: bottom aligned in the right
- * half so the copy and the actions lead. Mobile: smaller, shifted right and
- * partly below the fold of the hero.
+ * Square portrait box inside the hero. Desktop: centred behind the frosted
+ * centre slab and a little larger than the hero, so the face reads as blur
+ * under the slab and as glyphs around its edges.
+ * Phones: centred horizontally near the top of the hero, above the slab,
+ * never taller than 70% of the hero.
  */
 export function portraitPlacement(width: number, height: number): { size: number; x: number; y: number } {
   if (width >= DESKTOP_MIN_WIDTH) {
-    const size = height * 0.86;
-    return { size, x: width - size * 0.92, y: height - size };
+    const size = height * 1.12;
+    return { size, x: (width - size) / 2, y: (height - size) / 2 };
   }
-  const size = width * 0.95;
-  return { size, x: width - size * 0.82, y: height - size * 0.9 };
+  const size = Math.min(width * 1.02, height * 0.7);
+  return { size, x: (width - size) / 2, y: height * 0.06 };
+}
+
+/**
+ * Low and high quantiles (0..1) of `values`, used to stretch a dim photo to
+ * the full tonal range. Empty input keeps the full range.
+ */
+export function levels(values: ArrayLike<number>, lowQ: number, highQ: number): { lo: number; hi: number } {
+  if (values.length === 0) return { lo: 0, hi: 1 };
+  const sorted = Array.from(values).sort((a, b) => a - b);
+  const at = (q: number) => sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
+  return { lo: at(lowQ), hi: at(highQ) };
+}
+
+/** Maps `v` from lo..hi to 0..1, clamped. A degenerate range returns `v` unchanged. */
+export function stretch(v: number, lo: number, hi: number): number {
+  if (hi - lo < 1e-6) return v;
+  return Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
 }
 
 /**
@@ -195,7 +214,8 @@ export function cellColor(
       (0.22 + v * 0.78) * coverage,
     ];
   }
-  return [Math.round(r * 0.55), Math.round(g * 0.5), Math.round(b * 0.48), (0.25 + v * 0.7) * coverage];
+  // Light theme: a deep tone of the source colour, with an alpha floor so the face reads as ink, not grey dust.
+  return [Math.round(r * 0.38), Math.round(g * 0.36), Math.round(b * 0.36), (0.4 + v * 0.6) * coverage];
 }
 
 /** `cellColor` serialised as a CSS rgba() string. */
