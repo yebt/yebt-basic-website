@@ -61,23 +61,25 @@ describe('gridSize', () => {
 });
 
 describe('portraitPlacement', () => {
-  it('anchors the portrait bottom right and taller than the viewport on desktop', () => {
+  it('sits in the right part of the hero, bottom aligned and no taller than the hero, on desktop', () => {
     const { size, x, y } = portraitPlacement(1440, 900);
-    expect(size).toBeCloseTo(900 * 1.08);
-    expect(x).toBeCloseTo(1440 - size * 0.9);
-    expect(y).toBeCloseTo(900 - size + 900 * 0.04);
+    expect(size).toBeCloseTo(900 * 0.86);
+    expect(x).toBeCloseTo(1440 - size * 0.92);
+    expect(y).toBeCloseTo(900 - size);
+    // Leaves the left half of the hero to the copy and the actions.
+    expect(x).toBeGreaterThan(1440 / 2);
   });
 
-  it('switches to the mobile placement below the desktop breakpoint', () => {
+  it('shrinks and shifts right below the desktop breakpoint', () => {
     const { size, x, y } = portraitPlacement(390, 844);
-    expect(size).toBeCloseTo(390 * 1.25);
-    expect(x).toBeCloseTo((390 - size) / 2 + 390 * 0.12);
-    expect(y).toBeCloseTo(844 - size * 0.92);
+    expect(size).toBeCloseTo(390 * 0.95);
+    expect(x).toBeCloseTo(390 - size * 0.82);
+    expect(y).toBeCloseTo(844 - size * 0.9);
   });
 
   it('treats the breakpoint width itself as desktop', () => {
-    expect(portraitPlacement(DESKTOP_MIN_WIDTH, 700).size).toBeCloseTo(700 * 1.08);
-    expect(portraitPlacement(DESKTOP_MIN_WIDTH - 1, 700).size).toBeCloseTo((DESKTOP_MIN_WIDTH - 1) * 1.25);
+    expect(portraitPlacement(DESKTOP_MIN_WIDTH, 700).size).toBeCloseTo(700 * 0.86);
+    expect(portraitPlacement(DESKTOP_MIN_WIDTH - 1, 700).size).toBeCloseTo((DESKTOP_MIN_WIDTH - 1) * 0.95);
   });
 });
 
@@ -85,6 +87,11 @@ describe('colorFor', () => {
   it('brightens and fades in with intensity on the dark theme', () => {
     expect(colorFor(100, 100, 100, 0, true)).toBe('rgba(153,132,113,0.22)');
     expect(colorFor(255, 255, 255, 1, true)).toBe('rgba(255,255,255,1.00)');
+  });
+
+  it('scales the alpha by the sampled coverage so the portrait edge feathers out', () => {
+    expect(colorFor(255, 255, 255, 1, true, 0.5)).toBe('rgba(255,255,255,0.50)');
+    expect(colorFor(200, 100, 50, 0.5, false, 0.5)).toBe('rgba(110,50,24,0.30)');
   });
 
   it('darkens the source colour on the light theme', () => {

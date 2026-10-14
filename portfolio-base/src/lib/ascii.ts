@@ -91,23 +91,30 @@ export function gridSize(width: number, height: number, cell: number): { cols: n
   };
 }
 
-/** Square portrait box: bottom-right on desktop, bottom-centre (nudged right) on mobile. */
+/**
+ * Square portrait box inside the hero. Desktop: bottom aligned in the right
+ * half so the copy and the actions lead. Mobile: smaller, shifted right and
+ * partly below the fold of the hero.
+ */
 export function portraitPlacement(width: number, height: number): { size: number; x: number; y: number } {
   if (width >= DESKTOP_MIN_WIDTH) {
-    const size = height * 1.08;
-    return { size, x: width - size * 0.9, y: height - size + height * 0.04 };
+    const size = height * 0.86;
+    return { size, x: width - size * 0.92, y: height - size };
   }
-  const size = width * 1.25;
-  return { size, x: (width - size) / 2 + width * 0.12, y: height - size * 0.92 };
+  const size = width * 0.95;
+  return { size, x: width - size * 0.82, y: height - size * 0.9 };
 }
 
-/** Fill colour for a character, derived from the sampled pixel and its intensity v (0..1). */
-export function colorFor(r: number, g: number, b: number, v: number, dark: boolean): string {
+/**
+ * Fill colour for a character, derived from the sampled pixel, its intensity
+ * v (0..1) and its coverage (0..1, the sampled alpha of the feathered photo).
+ */
+export function colorFor(r: number, g: number, b: number, v: number, dark: boolean, coverage = 1): string {
   if (dark) {
     const R = Math.min(255, Math.round(r * 1.35 + 18));
     const G = Math.min(255, Math.round(g * 1.2 + 12));
     const B = Math.min(255, Math.round(b * 1.05 + 8));
-    return `rgba(${R},${G},${B},${(0.22 + v * 0.78).toFixed(2)})`;
+    return `rgba(${R},${G},${B},${((0.22 + v * 0.78) * coverage).toFixed(2)})`;
   }
-  return `rgba(${Math.round(r * 0.55)},${Math.round(g * 0.5)},${Math.round(b * 0.48)},${(0.25 + v * 0.7).toFixed(2)})`;
+  return `rgba(${Math.round(r * 0.55)},${Math.round(g * 0.5)},${Math.round(b * 0.48)},${((0.25 + v * 0.7) * coverage).toFixed(2)})`;
 }

@@ -1,5 +1,4 @@
 ---
-import AsciiBackground from '../components/AsciiBackground.astro';
 import Hero from '../components/Hero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SectionHeader from '../components/SectionHeader.astro';
@@ -13,7 +12,6 @@ const notes = (await getNotes()).slice(0, 4);
 ---
 
 <BaseLayout home>
-  <AsciiBackground slot="background" />
   <Hero />
   <main id="main">
     <section id="work" class="panel work" aria-labelledby="work-title">

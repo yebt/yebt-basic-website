@@ -1,6 +1,7 @@
 ---
 /**
- * Fixed full-viewport ASCII portrait. Cells resolve 40 -> 6 px in small
+ * ASCII portrait confined to the home hero (absolute, behind the hero grid,
+ * feathered towards the copy so the text and the actions lead). Cells resolve 40 -> 6 px in small
  * geometric steps; each step crossfades over the previous one and the
  * character ramp grows from 4 characters to the full ramp. The canvas fades
  * in once the portrait has loaded. Reduced motion: final frame, no fades.
@@ -15,17 +16,27 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
 
 <style>
   .ascii {
-    position: fixed;
+    position: absolute;
     inset: 0;
     z-index: 0;
     display: block;
     width: 100%;
     height: 100%;
     opacity: 0;
+    pointer-events: none;
+    /* Feather the portrait towards the copy on the left. */
+    -webkit-mask-image: linear-gradient(to right, transparent 38%, #000 72%);
+    mask-image: linear-gradient(to right, transparent 38%, #000 72%);
   }
   .ascii.is-ready {
-    opacity: 1;
+    opacity: var(--portrait-opacity, 0.6);
     transition: opacity 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (max-width: 819px) {
+    .ascii {
+      -webkit-mask-image: linear-gradient(to bottom, transparent 30%, #000 70%);
+      mask-image: linear-gradient(to bottom, transparent 30%, #000 70%);
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .ascii.is-ready {
@@ -79,8 +90,6 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       const size = STEPS[index];
       const ramp = rampForStep(index, STEPS.length);
       const dark = isDark();
-      const bg =
-        getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || (dark ? '#0b0c0b' : '#e5e4df');
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       frame.width = Math.round(W * dpr);
       frame.height = Math.round(H * dpr);
@@ -91,19 +100,29 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       src.height = H;
       const s = src.getContext('2d');
       if (!s) return false;
-      s.fillStyle = bg;
-      s.fillRect(0, 0, W, H);
+      s.clearRect(0, 0, W, H);
       const place = portraitPlacement(W, H);
       s.filter = dark ? 'none' : 'grayscale(0.15) contrast(1.05)';
       s.drawImage(img, place.x, place.y, place.size, place.size);
       s.filter = 'none';
+      // Feather the square photo into the hero surface: no hard edges, ever.
+      const cx = place.x + place.size / 2;
+      const cy = place.y + place.size * 0.45;
+      const feather = s.createRadialGradient(cx, cy, place.size * 0.28, cx, cy, place.size * 0.6);
+      feather.addColorStop(0, '#000');
+      feather.addColorStop(1, 'rgba(0,0,0,0)');
+      s.globalCompositeOperation = 'destination-in';
+      s.fillStyle = feather;
+      s.fillRect(0, 0, W, H);
+      s.globalCompositeOperation = 'source-over';
 
       // 2. Low-res blurred photo underneath the characters.
       lo.width = 40;
       lo.height = Math.max(1, Math.round((40 * H) / W));
-      lo.getContext('2d')?.drawImage(src, 0, 0, lo.width, lo.height);
-      f.fillStyle = bg;
-      f.fillRect(0, 0, W, H);
+      const l = lo.getContext('2d');
+      l?.clearRect(0, 0, lo.width, lo.height);
+      l?.drawImage(src, 0, 0, lo.width, lo.height);
+      f.clearRect(0, 0, W, H);
       f.save();
       f.imageSmoothingEnabled = true;
       f.filter = dark ? 'blur(22px) brightness(0.5) saturate(0.8)' : 'blur(22px) brightness(1.08) saturate(0.55)';
@@ -128,10 +147,13 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
           const R = data[i];
           const G = data[i + 1];
           const B = data[i + 2];
+          // Outside the photo the source is transparent: leave the hero surface bare.
+          const A = data[i + 3];
+          if (A < 12) continue;
           const lum = luminance(R, G, B);
           const ch = charFor(lum, ramp, dark);
           if (ch === ' ') continue;
-          f.fillStyle = colorFor(R, G, B, intensity(lum, dark), dark);
+          f.fillStyle = colorFor(R, G, B, intensity(lum, dark), dark, A / 255);
           f.fillText(ch, c * size + size / 2, r * size + size / 2);
         }
       }
@@ -146,6 +168,7 @@ const source = await getImage({ src: portrait, width: 320, format: 'webp' });
       }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.globalAlpha = 1;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(shown, 0, 0);
       if (incoming && alpha > 0) {
         ctx.globalAlpha = alpha;

@@ -173,7 +173,6 @@ iframe {
 /* Section frame shared by home sections and inner pages */
 .panel {
   position: relative;
-  background: var(--veil);
   border-top: 1px solid var(--line);
   padding: 88px var(--gutter);
 }

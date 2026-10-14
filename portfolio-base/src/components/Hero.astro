@@ -4,11 +4,13 @@
  * and holds the h1. Cells marked .e are empty spacers hidden on small screens.
  */
 import { site } from '../data/site';
+import AsciiPortrait from './AsciiPortrait.astro';
 import Nav from './Nav.astro';
 import ThemeToggle from './ThemeToggle.astro';
 ---
 
 <header class="hero">
+  <AsciiPortrait />
   <div class="cell r b tl display">
     <a href="#top" id="top" class="brand">{site.domain}</a>
   </div>
@@ -58,8 +60,11 @@ import ThemeToggle from './ThemeToggle.astro';
     height: 100vh;
     height: 100svh;
     min-height: 640px;
+    overflow: hidden;
   }
   .cell {
+    position: relative;
+    z-index: 1;
     min-width: 0;
   }
   .r {

@@ -82,10 +82,10 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
       DIRECTION CONTRACT — Grid Console
       THESIS: a software architect's portfolio read like a console readout; structure is the ornament.
       OWN-WORLD: hairline 3x3 grid, mono type (Share Tech Mono display, Geist Mono body), film grain,
-      frosted cells over a portrait that resolves from coarse to fine ASCII.
+      frosted cells; the portrait resolves from coarse to fine ASCII inside the hero only.
       STORY: few large characters become many small ones, the way a system gains detail as it is designed.
       FIRST VIEWPORT: the grid, a frosted center cell with "I build systems", the name behind a blinking
-      caret, the portrait resolving behind it.
+      caret, the portrait resolving on the right, feathered towards the copy.
       FORM: square hairline borders, no radius, no shadows, uppercase mono labels, ink on near-black or
       paper, both themes from the same tokens.
     -->
@@ -97,7 +97,6 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
       </filter>
       <rect width="100%" height="100%" filter="url(#grain)"></rect>
     </svg>
-    <slot name="background" />
     <div class="page">
       {!home && <SiteHeader />}
       <slot />
