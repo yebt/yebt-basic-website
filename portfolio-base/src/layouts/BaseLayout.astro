@@ -19,14 +19,14 @@ interface Props {
 }
 
 const {
-  title = 'Yahir Eduardo Bravo — Software Architect',
-  description = 'Yahir Eduardo Bravo, software architect. Systems that stay clear, tested and easy to change, from the domain model to the interface.',
+  title = 'Yahir Eduardo Bravo — Lead Developer · Software Architecture',
+  description = 'Yahir Eduardo Bravo, Lead Developer focused on software architecture. Systems that stay clear, tested and easy to change, from the domain model to the interface.',
   home = false,
   image = '/og.png',
   noindex = false,
 } = Astro.props;
 
-// Open Graph needs absolute URLs; they resolve only once `site` is set in astro.config.mjs.
+// Open Graph needs absolute URLs; they resolve only once `site` is set (SITE_URL, see astro.config.mjs).
 const absolute = (path: string) => (Astro.site ? new URL(path, Astro.site).href : path);
 const ogImage = absolute(image);
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
@@ -54,7 +54,7 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : un
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Yahir Eduardo Bravo — Software Architect" />
+    <meta property="og:image:alt" content="Yahir Eduardo Bravo — Lead Developer · Software Architecture" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
