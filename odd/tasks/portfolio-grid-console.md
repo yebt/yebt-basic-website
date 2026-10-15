@@ -72,6 +72,7 @@ The repo only holds the Astro starter. The user approved the v3 direction: home 
 ### Round 8 — CV enrichment (user: "free to improve and enrich the CV")
 - [x] T33 CV rewritten for ATS and architecture positioning without new facts: sharper summary and bullets (action + scope + outcome), "Core competencies" keyword line, skills grouped/deduped/normalized; leftovers: `site.role` and manifest without the "software architect" title, `engines.node >=22.18.0`.
 - [x] T34 Contact lamp removed at user request ("está peor"); the contact module now shows the plant blueprint/build animation on a drawing-board grid, held until in view (`PlantBuild onView`, IntersectionObserver at 0.6). Route: inline (2 files, known component). Evidence: `5b9725b`; astro build 12 pages; CDP screenshots dark/light after scroll show the drawing, at 700 ms only construction start. Supersedes T31 lamp.
+- [x] T35 CV: user-supplied infrastructure experience (Grafana, load balancer, proxy manager, VPS, Linux, scripting, automation, basic CI/CD) added to Lead Developer, competencies and a "DevOps and infrastructure" skill group; ATS hardening of the PDF (no durations beside dates, comma-separated competencies, implied-first-person summary). Route: inline. Evidence: `f5fc156`; vitest 152 passed; cv.pdf 2 pages, no phone. Open: user says the CV is not ATS-correct; which checker/symptom is unknown.
 
 ## Acceptance criteria
 - `npm run build` passes; `npm test` passes.
