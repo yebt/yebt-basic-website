@@ -78,6 +78,23 @@ export const basics = {
   website: 'https://yebt.dev',
 } as const;
 
+/**
+ * The ATS keyword line ("Core competencies"): the strongest terms from the
+ * experience and skills below, in the words job descriptions use.
+ */
+export const competencies: string[] = [
+  'Software architecture',
+  'Solution design',
+  'Technical leadership',
+  'Clean and hexagonal architecture',
+  'Code review',
+  'Deployment automation',
+  'Observability and error alerting',
+  'Performance optimization and caching',
+  'Unit and integration testing',
+  'Requirements analysis',
+];
+
 export const experience: Role[] = [
   {
     title: 'Lead Developer',
@@ -86,20 +103,19 @@ export const experience: Role[] = [
     start: '2024-10',
     software: true,
     scope:
-      'Technical lead of a team of 3 developers (1 on-site, 2 remote) and technical reference for solution design across the company’s web products.',
+      'Lead a team of 3 developers (1 on-site, 2 remote) and act as the technical reference for solution design across the company’s web products.',
     highlights: [
-      'Design and implement front-end and back-end solutions across several products (e-commerce, CRM, linking system), balancing scalability, maintainability and delivery speed.',
-      'Cut page load time from ~4 s to ~1.1 s through front-end optimization, template refactoring and a caching strategy.',
-      'Own the deployment and code review processes (merge requests); custom deployment scripts cut deploy time from 30 to 5 minutes, enabling faster release cycles.',
-      'Set up production error alerting by integrating Sentry with Telegram, improving error visibility and the team’s incident response.',
+      'Lead technical design across e-commerce, CRM and linking-system products, making front-end and back-end decisions that balance scalability, maintainability and delivery speed.',
+      'Reduced page load time from ~4 s to ~1.1 s by combining front-end optimization, template refactoring and a caching strategy.',
+      'Own the deployment and code review (merge request) processes; custom deployment scripts cut deploy time from 30 to 5 minutes and enabled faster release cycles.',
+      'Set up production error alerting (Sentry to Telegram), improving error visibility and the team’s incident response.',
       'Containerized the application setup with Docker, significantly reducing onboarding time for new developers.',
-      'Built internal tools for cross-database record validation and automation, reducing manual effort and data errors.',
       'Shape and negotiate requirements with stakeholders and the product area; run requirement walkthroughs and system overviews that improved task clarity and delivery speed.',
-      'Promote code reviews and shared documentation, and work with QA to raise test coverage, catch defects earlier and improve delivery quality.',
-      'Drive workflow improvements: task automation with in-house services and SQL query optimization.',
+      'Raise delivery quality through code reviews and shared documentation, and work with QA to increase test coverage and catch defects earlier.',
+      'Built internal tools for cross-database record validation and task automation, and optimized SQL queries, reducing manual effort and data errors.',
       'Improved SEO and Lighthouse scores on key landing pages through component rewrites and performance audits.',
     ],
-    featured: [1, 2, 3],
+    featured: [0, 1, 2],
   },
   {
     title: 'Junior Developer',
@@ -109,14 +125,14 @@ export const experience: Role[] = [
     end: '2024-11',
     software: true,
     scope:
-      'Development, support and maintenance of web applications, from requirements gathering with stakeholders to deployment.',
+      'Developed, supported and maintained web applications, from requirements gathering with stakeholders to deployment.',
     highlights: [
-      'Contributed to an e-commerce platform, an order management system, a biographical data system, authentication services and event control modules.',
-      'Integrated Sentry for error monitoring, enabling faster detection and resolution of runtime errors.',
-      'Introduced unit and integration tests across critical components and ran QA checks before each release.',
+      'Built and maintained features for an e-commerce platform, an order management system, a biographical data system, authentication services and event control modules.',
+      'Integrated Sentry error monitoring, enabling faster detection and resolution of runtime errors.',
+      'Introduced unit and integration tests for critical components and ran QA checks before each release.',
       'Improved data integrity by debugging and resolving key issues in the authentication and order management systems.',
       'Dockerized application environments, reducing setup and onboarding time.',
-      'Gathered and clarified requirements with stakeholders; fixed defects across front end and back end and deployed updates with minimal downtime.',
+      'Clarified requirements with stakeholders, fixed defects across front end and back end, and deployed updates with minimal downtime.',
       'Contributed to performance and usability improvements in the e-commerce and event platforms.',
     ],
     featured: [0, 1, 2],
@@ -129,23 +145,23 @@ export const experience: Role[] = [
     end: '2022-11',
     software: false,
     scope: 'Private tutoring in basic mathematics and programming.',
-    highlights: ['Taught basic mathematics and programming in C++ and Scheme.'],
+    highlights: ['Tutored students in basic mathematics and programming in C++ and Scheme.'],
     featured: [0],
   },
 ];
 
 export const skills: SkillGroup[] = [
-  { name: 'Back end', items: ['PHP (Laravel, Slim)'] },
-  { name: 'Front end', items: ['JavaScript (Vanilla, Vue.js, Astro)', 'HTML', 'CSS (Tailwind CSS, Bootstrap)'] },
+  { name: 'Programming languages', items: ['PHP', 'JavaScript', 'SQL', 'HTML', 'CSS', 'Bash', 'Python', 'Lua'] },
+  { name: 'Back end', items: ['Laravel', 'Slim', 'Node.js', 'Bun'] },
+  { name: 'Front end', items: ['Vue.js', 'Astro', 'Tailwind CSS', 'Bootstrap'] },
   { name: 'Databases', items: ['MySQL', 'PostgreSQL', 'SQLite', 'SQL query optimization'] },
-  { name: 'Runtimes', items: ['Node.js', 'Bun'] },
-  { name: 'Scripting and automation', items: ['Bash', 'Python', 'Lua', 'Make'] },
-  { name: 'Infrastructure and tooling', items: ['Docker', 'Linux', 'Git (GitHub, GitLab)', 'Sentry'] },
+  { name: 'DevOps and tooling', items: ['Docker', 'Linux', 'Git', 'GitHub', 'GitLab', 'Make', 'Sentry'] },
   {
     name: 'Architecture and design',
     items: [
       'Solution design',
-      'Clean and hexagonal architecture',
+      'Clean architecture',
+      'Hexagonal architecture',
       'Domain modeling',
       'Design systems (atomic design, container–presentational components)',
       'Performance and caching strategy',
@@ -195,7 +211,7 @@ export const experienceTotal = experienceMonths(
 );
 export const experienceYears = yearsLabel(experienceTotal);
 
-export const summary = `Software engineer with ${experienceYears} of professional experience designing and building web systems. As Lead Developer at Webcloster SAS I lead a team of three developers and act as the technical reference for solution design across e-commerce, CRM and linking systems, weighing scalability, maintainability and delivery speed. I own the deployment process, production error alerting and the code review process, and I shape requirements with stakeholders before they become code. I value clear boundaries, tested code and open communication, and I am looking for software architecture roles.`;
+export const summary = `Software engineer with ${experienceYears} of professional experience designing, building and running web systems with PHP (Laravel), JavaScript (Vue.js, Astro) and SQL. As Lead Developer at Webcloster SAS I lead a team of three developers and act as the technical reference for solution design across e-commerce, CRM and linking systems, weighing scalability, maintainability and delivery speed. I own the deployment and code review processes, set up production error alerting, and cut page load time from ~4 s to ~1.1 s and deploy time from 30 to 5 minutes. I work from clear boundaries, tested code and well-understood requirements, and I am looking for software architecture roles.`;
 
 /** A role with its display strings computed. */
 export function describeRole(role: Role) {

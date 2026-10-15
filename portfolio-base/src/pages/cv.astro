@@ -8,7 +8,7 @@
  */
 import Actions from '../components/Actions.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { asOf, basics, courses, cv, education, languages, roles, skills, summary } from '../data/cv';
+import { asOf, basics, competencies, courses, cv, education, languages, roles, skills, summary } from '../data/cv';
 import { site } from '../data/site';
 import { formatYearMonth, toYearMonth } from '../lib/cv';
 
@@ -61,6 +61,13 @@ const year = (ym: string) => ym.slice(0, 4);
       <section aria-labelledby="cv-summary">
         <h2 id="cv-summary">Summary</h2>
         <p class="summary">{summary}</p>
+      </section>
+
+      <section aria-labelledby="cv-competencies">
+        <h2 id="cv-competencies">Core competencies</h2>
+        <ul class="competencies">
+          {competencies.map((item) => <li>{item}</li>)}
+        </ul>
       </section>
 
       <section aria-labelledby="cv-experience">
@@ -272,6 +279,19 @@ const year = (ym: string) => ym.slice(0, 4);
   .skills strong {
     font-weight: 500;
   }
+  .competencies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .competencies li {
+    padding: 3px 10px;
+    border: 1px solid var(--line-strong);
+    font-size: 13px;
+  }
 
   @media (max-width: 620px) {
     .sheet {
@@ -365,6 +385,18 @@ const year = (ym: string) => ym.slice(0, 4);
     }
     .skills strong {
       font-weight: 700;
+    }
+    .competencies {
+      display: block;
+    }
+    .competencies li {
+      display: inline;
+      padding: 0;
+      border: 0;
+      font-size: inherit;
+    }
+    .competencies li + li::before {
+      content: ' · ';
     }
     a {
       text-decoration: none;

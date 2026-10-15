@@ -108,3 +108,31 @@ describe('formatYearMonth / formatRange', () => {
     expect(formatRange({ start: '2022-11', end: '2024-11' })).toBe('Nov 2022 – Nov 2024');
   });
 });
+
+describe('CV data', async () => {
+  const data = await import('../data/cv');
+
+  it('lists 6–12 core competencies for the ATS keyword line', () => {
+    expect(data.competencies.length).toBeGreaterThanOrEqual(6);
+    expect(data.competencies.length).toBeLessThanOrEqual(12);
+  });
+
+  it('keeps each skill in one group only', () => {
+    const items = data.skills.flatMap((group) => group.items.map((item) => item.toLowerCase()));
+    expect(new Set(items).size).toBe(items.length);
+  });
+
+  it('features 2–3 existing highlights per role for the home timeline', () => {
+    for (const role of data.experience) {
+      expect(role.featured.length).toBeGreaterThanOrEqual(1);
+      expect(role.featured.length).toBeLessThanOrEqual(3);
+      for (const index of role.featured) expect(role.highlights[index]).toBeDefined();
+    }
+  });
+
+  it('never claims the Software Architect job title or publishes a phone number', () => {
+    const text = JSON.stringify({ ...data, cv: undefined, asOf: undefined });
+    expect(text).not.toMatch(/software architect\b/i);
+    expect(text).not.toMatch(/\+?\d[\d\s-]{8,}\d/);
+  });
+});
