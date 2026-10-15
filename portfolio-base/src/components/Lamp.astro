@@ -1,0 +1,137 @@
+---
+/**
+ * Perforated disc lamp (contact module): a round steel plate drilled on
+ * concentric rings, lit warm from behind, held by a thin brushed bezel and a
+ * centred hub. The geometry is computed here so every hole sits exactly on its
+ * ring. Decorative only.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const C = 100; // centre of the 200 × 200 viewBox
+const PLATE = 86; // plate radius, inside the bezel
+const HUB = 15; // hub radius
+const PITCH = 6.4; // distance between rings and between holes on a ring
+
+/** Holes on concentric rings from just outside the hub to just inside the bezel. */
+const holes: { x: number; y: number; r: number }[] = [];
+for (let ring = 0, radius = HUB + 8; radius <= PLATE - 6; ring += 1, radius += PITCH) {
+  const count = Math.round((2 * Math.PI * radius) / PITCH);
+  const offset = ring % 2 ? Math.PI / count : 0; // stagger alternate rings
+  // Holes shrink slightly toward the rim, like a drilled pattern that thins out.
+  const r = 1.85 - 0.45 * ((radius - HUB) / (PLATE - HUB));
+  for (let i = 0; i < count; i += 1) {
+    const a = offset + (i / count) * 2 * Math.PI;
+    holes.push({ x: +(C + radius * Math.cos(a)).toFixed(2), y: +(C + radius * Math.sin(a)).toFixed(2), r: +r.toFixed(2) });
+  }
+}
+---
+
+<span class:list={['lamp', className]} aria-hidden="true">
+  <svg viewBox="0 0 200 200" focusable="false">
+    <defs>
+      <radialGradient id="lamp-plate" cx={C} cy={C} r={PLATE} gradientUnits="userSpaceOnUse">
+        <stop offset="0" style="stop-color: var(--lamp-plate-core)" />
+        <stop offset="1" style="stop-color: var(--lamp-plate)" />
+      </radialGradient>
+      <radialGradient id="lamp-light" cx={C} cy={C} r={PLATE} gradientUnits="userSpaceOnUse">
+        <stop offset="0" style="stop-color: var(--lamp-core)" />
+        <stop offset="0.45" style="stop-color: var(--lamp)" />
+        <stop offset="1" style="stop-color: var(--lamp-dim)" />
+      </radialGradient>
+      <linearGradient id="lamp-bezel" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" style="stop-color: var(--steel-hi)" />
+        <stop offset="0.3" style="stop-color: var(--steel-lo)" />
+        <stop offset="0.52" style="stop-color: var(--steel-hi)" />
+        <stop offset="0.78" style="stop-color: var(--steel-lo)" />
+        <stop offset="1" style="stop-color: var(--steel)" />
+      </linearGradient>
+      <radialGradient id="lamp-hub" cx="0.38" cy="0.32" r="0.75">
+        <stop offset="0" style="stop-color: var(--steel-hi)" />
+        <stop offset="0.6" style="stop-color: var(--steel)" />
+        <stop offset="1" style="stop-color: var(--steel-lo)" />
+      </radialGradient>
+    </defs>
+
+    <circle class="plate" cx={C} cy={C} r={PLATE} fill="url(#lamp-plate)" />
+    <g class="holes" fill="url(#lamp-light)">
+      {holes.map((h) => <circle cx={h.x} cy={h.y} r={h.r} />)}
+    </g>
+
+    <circle class="bezel" cx={C} cy={C} r={PLATE + 2.6} fill="none" stroke="url(#lamp-bezel)" stroke-width="5" />
+    <circle class="bezel-edge" cx={C} cy={C} r={PLATE + 5.1} fill="none" stroke-width="0.6" />
+    <circle class="bezel-seat" cx={C} cy={C} r={PLATE + 0.2} fill="none" stroke-width="0.8" />
+
+    <circle class="hub-seat" cx={C} cy={C} r={HUB + 1.6} fill="none" stroke-width="1.2" />
+    <circle cx={C} cy={C} r={HUB} fill="url(#lamp-hub)" />
+    <circle class="hub-ring" cx={C} cy={C} r={HUB - 5} fill="none" stroke-width="0.6" />
+    <circle class="hub-pin" cx={C} cy={C} r="2" />
+  </svg>
+</span>
+
+<style>
+  .lamp {
+    display: block;
+    aspect-ratio: 1;
+    pointer-events: none;
+  }
+  /* Warm halo behind the disc; closest-side keeps it fading to nothing. */
+  .lamp::before {
+    content: '';
+    position: absolute;
+    inset: -22%;
+    border-radius: 50%;
+    background: radial-gradient(
+      closest-side,
+      var(--lamp-halo) 0%,
+      color-mix(in srgb, var(--lamp-halo) 45%, transparent) 50%,
+      transparent 100%
+    );
+    animation: lamp-breathe 9s ease-in-out infinite alternate;
+  }
+  svg {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .holes {
+    animation: lamp-breathe 9s ease-in-out infinite alternate;
+  }
+  .bezel-edge {
+    stroke: var(--steel-hi);
+    stroke-opacity: 0.45;
+  }
+  .bezel-seat,
+  .hub-seat {
+    stroke: var(--slot);
+    stroke-opacity: 0.7;
+  }
+  .hub-ring {
+    stroke: var(--steel-lo);
+    stroke-opacity: 0.8;
+  }
+  .hub-pin {
+    fill: var(--slot);
+  }
+
+  @keyframes lamp-breathe {
+    from {
+      opacity: 0.82;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lamp::before,
+    .holes {
+      animation: none;
+    }
+  }
+</style>

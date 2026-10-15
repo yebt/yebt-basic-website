@@ -39,9 +39,13 @@
   --acrylic-light: rgba(236, 236, 230, 0.055);
   --acrylic-edge: rgba(255, 255, 255, 0.06);
   --module-shadow: rgba(0, 0, 0, 0.55);
-  /* Warm perforated lamp (contact module). */
-  --lamp: rgba(255, 128, 52, 0.42);
-  --lamp-dots: rgba(255, 236, 214, 0.34);
+  /* Perforated disc lamp (contact module): light through the holes, plate, halo. */
+  --lamp-core: #ffe2c2;
+  --lamp: #ff8a3d;
+  --lamp-dim: rgba(214, 84, 20, 0.4);
+  --lamp-halo: rgba(255, 112, 36, 0.3);
+  --lamp-plate: #141515;
+  --lamp-plate-core: #2a2421;
   --portrait-opacity: 0.7;
   /* Blueprint construction lines (hero mark animation). */
   --blueprint: #7ea6dc;
@@ -85,8 +89,12 @@
   --acrylic-light: rgba(255, 255, 255, 0.55);
   --acrylic-edge: rgba(255, 255, 255, 0.7);
   --module-shadow: rgba(40, 38, 32, 0.22);
-  --lamp: rgba(240, 110, 30, 0.3);
-  --lamp-dots: rgba(255, 255, 255, 0.5);
+  --lamp-core: #ffdcb4;
+  --lamp: #f26d1f;
+  --lamp-dim: rgba(214, 84, 20, 0.5);
+  --lamp-halo: rgba(240, 110, 30, 0.2);
+  --lamp-plate: #474c51;
+  --lamp-plate-core: #5f544d;
   --portrait-opacity: 0.72;
   --blueprint: #2c5a98;
 }
@@ -123,8 +131,12 @@
     --acrylic-light: rgba(255, 255, 255, 0.55);
     --acrylic-edge: rgba(255, 255, 255, 0.7);
     --module-shadow: rgba(40, 38, 32, 0.22);
-    --lamp: rgba(240, 110, 30, 0.3);
-    --lamp-dots: rgba(255, 255, 255, 0.5);
+    --lamp-core: #ffdcb4;
+    --lamp: #f26d1f;
+    --lamp-dim: rgba(214, 84, 20, 0.5);
+    --lamp-halo: rgba(240, 110, 30, 0.2);
+    --lamp-plate: #474c51;
+    --lamp-plate-core: #5f544d;
     --portrait-opacity: 0.72;
     --blueprint: #2c5a98;
   }
