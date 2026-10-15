@@ -13,9 +13,11 @@ import { plant } from '../data/plant';
 interface Props {
   size?: number;
   class?: string;
+  /** Hold the drawing until the mark scrolls into view (marks below the fold). */
+  onView?: boolean;
 }
 
-const { size = 56, class: className } = Astro.props;
+const { size = 56, class: className, onView = false } = Astro.props;
 
 /** Circle as a path, so pathLength-based drawing behaves like every other line. */
 const ring = (cx: number, cy: number, r: number) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
@@ -45,6 +47,7 @@ const strokes = [plant.stem, plant.leafLow, plant.veinLow, plant.leafHigh, plant
   height={size}
   viewBox="0 0 32 32"
   aria-hidden="true"
+  data-on-view={onView ? '' : undefined}
   style={`--u: ${(32 / size).toFixed(4)}`}
 >
   <g class="bp">
@@ -58,6 +61,24 @@ const strokes = [plant.stem, plant.leafLow, plant.veinLow, plant.leafHigh, plant
     {plant.nodes.map(([cx, cy], i) => <circle cx={cx} cy={cy} r="1.4" style={`--i: ${i}`} />)}
   </g>
 </svg>
+
+<script>
+  // Start held drawings once they are mostly on screen; each runs once.
+  const held = document.querySelectorAll<SVGElement>('.build[data-on-view]');
+  if (held.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-drawing');
+          io.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.6 },
+    );
+    held.forEach((el) => io.observe(el));
+  }
+</script>
 
 <style>
   .build {
@@ -99,6 +120,12 @@ const strokes = [plant.stem, plant.leafLow, plant.veinLow, plant.leafHigh, plant
     transform-box: fill-box;
     transform-origin: center;
     animation: set 260ms cubic-bezier(0.22, 1, 0.36, 1) calc(1500ms + var(--i) * 120ms) both;
+  }
+  /* Held until in view; without scripting the drawing simply runs on load. */
+  @media (scripting: enabled) {
+    .build[data-on-view]:not(.is-drawing) :is(path, circle) {
+      animation-play-state: paused;
+    }
   }
   @keyframes draw {
     from {

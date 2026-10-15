@@ -4,7 +4,7 @@ import Actions from '../components/Actions.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SectionHeader from '../components/SectionHeader.astro';
 import Experience from '../components/Experience.astro';
-import Lamp from '../components/Lamp.astro';
+import PlantBuild from '../components/PlantBuild.astro';
 import { basics, currentRole, cv, cvPage, education, languages, skills } from '../data/cv';
 import { practice, site } from '../data/site';
 import { getNotes, getProjects, noteHref } from '../lib/collections';
@@ -76,7 +76,9 @@ const person = {
     </section>
 
     <section id="contact" class="panel contact" aria-labelledby="contact-title">
-      <Lamp />
+      <div class="board" aria-hidden="true">
+        <PlantBuild size={196} onView />
+      </div>
       <h2 id="contact-title" class="contact-title">Let's talk architecture.</h2>
       <p class="contact-mail"><a href={site.email}>{site.emailLabel}</a></p>
       <Actions
@@ -155,13 +157,31 @@ const person = {
   .contact {
     padding-block: clamp(56px, 8vw, 112px);
   }
-  /* Perforated disc lamp, kept to the right of the copy. Decorative. */
-  .contact :global(.lamp) {
+  /*
+   * Drawing board: the plant mark drawn from its blueprint when the module
+   * scrolls into view, framed by registration axes. Decorative, to the right.
+   */
+  .board {
     position: absolute;
     top: 50%;
-    right: 7%;
-    width: min(30vw, 340px);
+    right: 8%;
+    display: grid;
+    place-items: center;
+    width: min(26vw, 300px);
+    aspect-ratio: 1;
     transform: translateY(-50%);
+    pointer-events: none;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(var(--line), var(--line)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat,
+      linear-gradient(color-mix(in srgb, var(--blueprint) 12%, transparent) 1px, transparent 1px) 0 0 / 20px 20px,
+      linear-gradient(90deg, color-mix(in srgb, var(--blueprint) 12%, transparent) 1px, transparent 1px) 0 0 / 20px 20px;
+  }
+  .board :global(.build) {
+    width: 66%;
+    height: auto;
+    color: var(--ink);
   }
   .contact-title,
   .contact-mail,
@@ -189,7 +209,7 @@ const person = {
   }
 
   @media (max-width: 900px) {
-    .contact :global(.lamp) {
+    .board {
       display: none;
     }
   }
