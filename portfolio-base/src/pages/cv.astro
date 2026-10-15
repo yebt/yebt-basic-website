@@ -79,7 +79,8 @@ const year = (ym: string) => ym.slice(0, 4);
               <p class="meta">
                 <span class="org">{role.organization}</span> | {role.location} |{' '}
                 <span class="when">
-                  {role.range} ({role.duration})
+                  {role.range}
+                  <span class="dur"> ({role.duration})</span>
                 </span>
               </p>
               <p class="scope">{role.scope}</p>
@@ -395,8 +396,13 @@ const year = (ym: string) => ym.slice(0, 4);
       border: 0;
       font-size: inherit;
     }
+    /* Commas: the separator keyword parsers split lists on. */
     .competencies li + li::before {
-      content: ' · ';
+      content: ', ';
+    }
+    /* Durations are derived; dates alone keep date parsing unambiguous. */
+    .dur {
+      display: none;
     }
     a {
       text-decoration: none;

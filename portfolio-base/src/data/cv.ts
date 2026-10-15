@@ -88,8 +88,9 @@ export const competencies: string[] = [
   'Technical leadership',
   'Clean and hexagonal architecture',
   'Code review',
-  'Deployment automation',
-  'Observability and error alerting',
+  'CI/CD and deployment automation',
+  'Linux server administration',
+  'Monitoring and observability',
   'Performance optimization and caching',
   'Unit and integration testing',
   'Requirements analysis',
@@ -108,6 +109,7 @@ export const experience: Role[] = [
       'Lead technical design across e-commerce, CRM and linking-system products, making front-end and back-end decisions that balance scalability, maintainability and delivery speed.',
       'Reduced page load time from ~4 s to ~1.1 s by combining front-end optimization, template refactoring and a caching strategy.',
       'Own the deployment and code review (merge request) processes; custom deployment scripts cut deploy time from 30 to 5 minutes and enabled faster release cycles.',
+      'Run the production infrastructure: Linux VPS deployments behind a load balancer and Nginx Proxy Manager, monitored with Grafana, with basic CI/CD pipelines and shell scripts automating routine operations.',
       'Set up production error alerting (Sentry to Telegram), improving error visibility and the team’s incident response.',
       'Containerized the application setup with Docker, significantly reducing onboarding time for new developers.',
       'Shape and negotiate requirements with stakeholders and the product area; run requirement walkthroughs and system overviews that improved task clarity and delivery speed.',
@@ -155,7 +157,24 @@ export const skills: SkillGroup[] = [
   { name: 'Back end', items: ['Laravel', 'Slim', 'Node.js', 'Bun'] },
   { name: 'Front end', items: ['Vue.js', 'Astro', 'Tailwind CSS', 'Bootstrap'] },
   { name: 'Databases', items: ['MySQL', 'PostgreSQL', 'SQLite', 'SQL query optimization'] },
-  { name: 'DevOps and tooling', items: ['Docker', 'Linux', 'Git', 'GitHub', 'GitLab', 'Make', 'Sentry'] },
+  {
+    name: 'DevOps and infrastructure',
+    items: [
+      'Linux',
+      'Docker',
+      'VPS deployment',
+      'Load balancing',
+      'Nginx Proxy Manager',
+      'Grafana',
+      'Sentry',
+      'CI/CD (basic pipelines)',
+      'Shell scripting and automation',
+      'Git',
+      'GitHub',
+      'GitLab',
+      'Make',
+    ],
+  },
   {
     name: 'Architecture and design',
     items: [
@@ -211,7 +230,7 @@ export const experienceTotal = experienceMonths(
 );
 export const experienceYears = yearsLabel(experienceTotal);
 
-export const summary = `Software engineer with ${experienceYears} of professional experience designing, building and running web systems with PHP (Laravel), JavaScript (Vue.js, Astro) and SQL. As Lead Developer at Webcloster SAS I lead a team of three developers and act as the technical reference for solution design across e-commerce, CRM and linking systems, weighing scalability, maintainability and delivery speed. I own the deployment and code review processes, set up production error alerting, and cut page load time from ~4 s to ~1.1 s and deploy time from 30 to 5 minutes. I work from clear boundaries, tested code and well-understood requirements, and I am looking for software architecture roles.`;
+export const summary = `Software engineer with ${experienceYears} of professional experience designing, building and running web systems with PHP (Laravel), JavaScript (Vue.js, Astro) and SQL. Lead Developer at Webcloster SAS, leading a team of three developers and acting as the technical reference for solution design across e-commerce, CRM and linking systems, weighing scalability, maintainability and delivery speed. Owns deployment, production infrastructure (Linux VPS, load balancing, Grafana monitoring, basic CI/CD) and code review; cut page load time from ~4 s to ~1.1 s and deploy time from 30 to 5 minutes. Works from clear boundaries, tested code and well-understood requirements; seeking software architecture roles.`;
 
 /** A role with its display strings computed. */
 export function describeRole(role: Role) {
