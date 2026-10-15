@@ -3,7 +3,7 @@
  */
 export const site = {
   name: 'Yahir Eduardo Bravo',
-  role: 'software architect',
+  role: 'lead developer · software architecture',
   domain: 'YEBT.DEV',
   location: 'Tuluá, Valle del Cauca',
   email: 'mailto:yahir.eduardo.bravo@gmail.com',
