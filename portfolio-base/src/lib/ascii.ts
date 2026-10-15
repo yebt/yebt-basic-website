@@ -6,9 +6,6 @@
 /** Characters from empty to dense. */
 export const RAMP = ' .:-=+*#%@';
 
-/** Characters in the ramp of the first (coarsest) step. */
-export const MIN_RAMP_CHARS = 4;
-
 /**
  * Cell sizes in px, coarse to fine, shrinking by a constant ratio so the
  * resolve reads as one continuous motion instead of a few jumps.
@@ -26,31 +23,99 @@ export function stepSequence(from: number, to: number, count: number): number[] 
 }
 
 /** Cell sizes in px, coarse to fine. */
-export const STEPS: readonly number[] = stepSequence(40, 6, 14);
+export const STEPS: readonly number[] = stepSequence(40, 6, 10);
 
 /** Milliseconds each step stays on screen. */
-export const STEP_MS = 240;
+export const STEP_MS = 340;
 
-/** Milliseconds a new step takes to fade in over the previous one. */
-export const CROSSFADE_MS = 200;
+/** Milliseconds a cell flickers through similar glyphs before it settles. */
+export const SCRAMBLE_MS = 150;
+
+/** Window in which cells of a step start scrambling (staggered per cell). */
+export const SETTLE_WINDOW_MS = STEP_MS - SCRAMBLE_MS - 20;
+
+/** Milliseconds between glyph swaps while a cell scrambles. */
+export const FLICKER_MS = 50;
 
 /** Milliseconds the canvas takes to fade in once the portrait has loaded. */
 export const FADE_IN_MS = 800;
 
+/** Idle shimmer: one tick every SHIMMER_TICK_MS, each touched cell holds its swap SHIMMER_HOLD_MS. */
+export const SHIMMER_TICK_MS = 160;
+export const SHIMMER_HOLD_MS = 320;
+
 /**
- * Subset of `ramp` used at `step` of `total`: starts with MIN_RAMP_CHARS evenly
- * spaced characters (always the emptiest and the densest) and grows to the full
- * ramp on the last step, keeping the empty-to-dense order.
+ * Glyphs from empty to dense (Geist Mono covers all of them). Every step draws
+ * a different, density-ordered subset so the texture visibly changes as cells shrink.
  */
-export function rampForStep(step: number, total: number, ramp: string = RAMP): string {
-  const len = ramp.length;
-  const min = Math.min(MIN_RAMP_CHARS, len);
+export const GLYPHS = ' .\'`,:;~-^"!il|+=<>?*rcvxzunJLCYUXZO0QB#%&$@';
+
+/** Glyphs in the first (coarsest) and last (finest) step sets. */
+export const MIN_GLYPHS = 5;
+export const MAX_GLYPHS = 12;
+
+/** Golden-ratio phase so consecutive steps sample far-apart positions of each bucket. */
+const PHI = 0.6180339887;
+
+/**
+ * Density-ordered glyph set for `step` of `total`: always starts with the empty
+ * glyph, grows from MIN_GLYPHS to MAX_GLYPHS, and shifts its sampling phase
+ * every step so consecutive steps share few glyphs.
+ */
+export function glyphSetForStep(step: number, total: number, glyphs: string = GLYPHS): string {
+  const len = glyphs.length;
   const t = total <= 1 ? 1 : Math.min(1, Math.max(0, step / (total - 1)));
-  const count = Math.round(min + (len - min) * t);
-  if (count >= len) return ramp;
-  let out = '';
-  for (let k = 0; k < count; k++) out += ramp[Math.round((k * (len - 1)) / (count - 1))];
+  const count = Math.min(len, Math.round(MIN_GLYPHS + (MAX_GLYPHS - MIN_GLYPHS) * t));
+  const bucket = (len - 1) / (count - 1);
+  const phase = ((step * PHI) % 1) - 0.5;
+  let out = glyphs[0];
+  let prev = 0;
+  for (let k = 1; k < count; k++) {
+    const remaining = count - 1 - k;
+    const ideal = Math.round(k * bucket - bucket / 2 + bucket * (0.5 + phase * 0.9));
+    const index = Math.min(len - 1 - remaining, Math.max(prev + 1, ideal));
+    out += glyphs[index];
+    prev = index;
+  }
   return out;
+}
+
+/** Deterministic integer hash of three numbers mapped to 0..1 (no Math.random, so frames are reproducible). */
+export function hash01(a: number, b: number, c: number): number {
+  let h = Math.imul(a | 0, 0x27d4eb2d) ^ Math.imul(b | 0, 0x165667b1) ^ Math.imul(c | 0, 0x9e3779b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+
+/**
+ * Index of a glyph of similar density to `target` (within two places), never
+ * the empty glyph and never the target itself, chosen by `seed` (0..1).
+ */
+export function scrambleIndex(target: number, n: number, seed: number): number {
+  const lo = Math.max(1, target - 2);
+  const hi = Math.min(n - 1, target + 2);
+  const options: number[] = [];
+  for (let i = lo; i <= hi; i++) if (i !== target) options.push(i);
+  if (options.length === 0) return Math.max(1, Math.min(n - 1, target));
+  return options[Math.min(options.length - 1, Math.floor(seed * options.length))];
+}
+
+/**
+ * Milliseconds after the step starts at which the cell begins to scramble:
+ * a diagonal sweep from the top-left, broken up by per-cell jitter.
+ */
+export function settleDelay(col: number, row: number, cols: number, rows: number, windowMs: number): number {
+  const sweep = (col / Math.max(1, cols - 1)) * 0.6 + (row / Math.max(1, rows - 1)) * 0.4;
+  const jitter = hash01(col, row, 7);
+  return windowMs * (sweep * 0.55 + jitter * 0.45);
+}
+
+/** Cells to swap per shimmer tick: sparse and capped so the idle state stays cheap. */
+export function shimmerCount(cells: number): number {
+  if (cells <= 0) return 0;
+  return Math.max(1, Math.min(24, Math.round(cells * 0.0012)));
 }
 
 /** Cubic ease-out on a progress value clamped to 0..1. */
@@ -78,10 +143,14 @@ export function intensity(lum: number, dark: boolean): number {
   return dark ? lum : 1 - lum;
 }
 
-export function charFor(lum: number, ramp: string, dark: boolean): string {
-  const n = ramp.length;
+/** Index into a ramp of length `n` for a luminance; see `charFor`. */
+export function charIndexFor(lum: number, n: number, dark: boolean): number {
   const index = Math.min(n - 1, Math.floor(intensity(lum, dark) * n * RAMP_GAIN));
-  return ramp[Math.max(0, index)];
+  return Math.max(0, index);
+}
+
+export function charFor(lum: number, ramp: string, dark: boolean): string {
+  return ramp[charIndexFor(lum, ramp.length, dark)];
 }
 
 export function gridSize(width: number, height: number, cell: number): { cols: number; rows: number } {
@@ -91,23 +160,70 @@ export function gridSize(width: number, height: number, cell: number): { cols: n
   };
 }
 
-/** Square portrait box: bottom-right on desktop, bottom-centre (nudged right) on mobile. */
+/** Horizontal centre of the face across the square source photo (0..1). */
+export const FACE_CENTER = 0.49;
+
+/**
+ * Square portrait box inside the hero. Desktop: the face sits in the right
+ * third, beside the frosted slab, so it reads clearly while the copy leads;
+ * its right edge (cheek and ear, ~0.8 of the photo) never leaves the viewport.
+ * Phones: centred horizontally near the top of the hero, above the slab,
+ * never taller than 70% of the hero.
+ */
 export function portraitPlacement(width: number, height: number): { size: number; x: number; y: number } {
   if (width >= DESKTOP_MIN_WIDTH) {
-    const size = height * 1.08;
-    return { size, x: width - size * 0.9, y: height - size + height * 0.04 };
+    const size = Math.min(height * 0.92, width * 0.62);
+    const x = Math.min(width * 0.8 - size * FACE_CENTER, width - size * 0.8);
+    return { size, x, y: (height - size) / 2 };
   }
-  const size = width * 1.25;
-  return { size, x: (width - size) / 2 + width * 0.12, y: height - size * 0.92 };
+  const size = Math.min(width * 1.02, height * 0.7);
+  return { size, x: (width - size) / 2, y: height * 0.06 };
 }
 
-/** Fill colour for a character, derived from the sampled pixel and its intensity v (0..1). */
-export function colorFor(r: number, g: number, b: number, v: number, dark: boolean): string {
+/**
+ * Low and high quantiles (0..1) of `values`, used to stretch a dim photo to
+ * the full tonal range. Empty input keeps the full range.
+ */
+export function levels(values: ArrayLike<number>, lowQ: number, highQ: number): { lo: number; hi: number } {
+  if (values.length === 0) return { lo: 0, hi: 1 };
+  const sorted = Array.from(values).sort((a, b) => a - b);
+  const at = (q: number) => sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(q * (sorted.length - 1))))];
+  return { lo: at(lowQ), hi: at(highQ) };
+}
+
+/** Maps `v` from lo..hi to 0..1, clamped. A degenerate range returns `v` unchanged. */
+export function stretch(v: number, lo: number, hi: number): number {
+  if (hi - lo < 1e-6) return v;
+  return Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
+}
+
+/**
+ * Fill colour channels [r, g, b, alpha] for a character, derived from the
+ * sampled pixel, its intensity v (0..1) and its coverage (0..1, the sampled
+ * alpha of the feathered photo).
+ */
+export function cellColor(
+  r: number,
+  g: number,
+  b: number,
+  v: number,
+  dark: boolean,
+  coverage = 1,
+): [number, number, number, number] {
   if (dark) {
-    const R = Math.min(255, Math.round(r * 1.35 + 18));
-    const G = Math.min(255, Math.round(g * 1.2 + 12));
-    const B = Math.min(255, Math.round(b * 1.05 + 8));
-    return `rgba(${R},${G},${B},${(0.22 + v * 0.78).toFixed(2)})`;
+    return [
+      Math.min(255, Math.round(r * 1.35 + 18)),
+      Math.min(255, Math.round(g * 1.2 + 12)),
+      Math.min(255, Math.round(b * 1.05 + 8)),
+      (0.22 + v * 0.78) * coverage,
+    ];
   }
-  return `rgba(${Math.round(r * 0.55)},${Math.round(g * 0.5)},${Math.round(b * 0.48)},${(0.25 + v * 0.7).toFixed(2)})`;
+  // Light theme: a deep tone of the source colour, with an alpha floor so the face reads as ink, not grey dust.
+  return [Math.round(r * 0.38), Math.round(g * 0.36), Math.round(b * 0.36), (0.4 + v * 0.6) * coverage];
+}
+
+/** `cellColor` serialised as a CSS rgba() string. */
+export function colorFor(r: number, g: number, b: number, v: number, dark: boolean, coverage = 1): string {
+  const [R, G, B, A] = cellColor(r, g, b, v, dark, coverage);
+  return `rgba(${R},${G},${B},${A.toFixed(2)})`;
 }

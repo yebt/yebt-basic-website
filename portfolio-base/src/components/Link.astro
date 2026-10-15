@@ -1,0 +1,20 @@
+---
+/**
+ * Anchor that applies the site's link rules: external resources open in a
+ * new tab with rel="noopener noreferrer" and a visually hidden hint; internal
+ * links, anchors and mailto render as plain anchors. The arrow mark for
+ * new-tab links is drawn in global.css.
+ */
+import { NEW_TAB_HINT, externalAttrs, isExternal } from '../lib/links';
+
+interface Props {
+  href: string;
+  rel?: string;
+  class?: string;
+}
+
+const { href, rel, class: className } = Astro.props;
+const attrs = externalAttrs(href, rel);
+---
+
+<a href={href} class={className} {...attrs}><slot />{isExternal(href) && <span class="sr-only"> {NEW_TAB_HINT}</span>}</a>

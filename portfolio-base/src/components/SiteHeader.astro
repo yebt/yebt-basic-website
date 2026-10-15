@@ -1,11 +1,13 @@
 ---
 /** Header for inner pages: the hero grid's top row, collapsed to one band. */
 import Nav from './Nav.astro';
+import PlantMark from './PlantMark.astro';
+import { site } from '../data/site';
 import ThemeToggle from './ThemeToggle.astro';
 ---
 
 <header class="site-header">
-  <a class="brand" href="/">YEBT.DEV</a>
+  <a class="brand" href="/"><PlantMark size={22} />{site.domain}</a>
   <div class="tools">
     <Nav />
     <ThemeToggle />
@@ -23,14 +25,13 @@ import ThemeToggle from './ThemeToggle.astro';
     padding: 8px var(--gutter);
     border-bottom: 1px solid var(--line);
     background: var(--frost);
-    backdrop-filter: blur(14px) saturate(0.7);
-    -webkit-backdrop-filter: blur(14px) saturate(0.7);
     font-family: var(--font-display);
     font-size: 15px;
   }
   .brand {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     min-height: 44px;
   }
   .tools {
@@ -39,5 +40,15 @@ import ThemeToggle from './ThemeToggle.astro';
     justify-content: flex-end;
     align-items: center;
     gap: 4px 22px;
+  }
+  @media (max-width: 820px) {
+    .site-header {
+      flex-wrap: nowrap;
+      padding: 8px 16px;
+    }
+    .tools {
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
   }
 </style>

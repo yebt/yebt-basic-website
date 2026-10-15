@@ -1,0 +1,74 @@
+---
+/**
+ * Brand mark: a sprout drawn like a technical diagram. A stem rises from a
+ * ground line; each leaf joins the stem at a node, the way modules hang off
+ * a system. `line` keeps a hairline stroke at any size (header, hero);
+ * `solid` is the filled form used for small icons.
+ */
+interface Props {
+  variant?: 'line' | 'solid';
+  size?: number;
+  /** Paints the two nodes in the safety-orange cable colour. */
+  accent?: boolean;
+  class?: string;
+}
+
+import { plant } from '../data/plant';
+
+const { variant = 'line', size = 24, accent = false, class: className } = Astro.props;
+---
+
+{
+  variant === 'line' ? (
+    <svg
+      class:list={['plant', 'plant--line', { 'plant--accent': accent }, className]}
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+    >
+      <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d={plant.stem} />
+        <path d={plant.ground} />
+        <path d={plant.leafLow} />
+        <path d={plant.veinLow} />
+        <path d={plant.leafHigh} />
+        <path d={plant.veinHigh} />
+        <path d={plant.bud} />
+      </g>
+      <g class="nodes">
+        {plant.nodes.map(([cx, cy]) => <circle cx={cx} cy={cy} r="1.4" />)}
+      </g>
+    </svg>
+  ) : (
+    <svg class:list={['plant', className]} width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <g fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d={plant.stem} fill="none" stroke-width="2.4" />
+        <path d={plant.groundSolid} fill="none" stroke-width="2.4" />
+        <path d={plant.leafLow} />
+        <path d={plant.leafHigh} />
+        <path d={plant.bud} />
+      </g>
+    </svg>
+  )
+}
+
+<style>
+  .plant {
+    display: block;
+    flex: none;
+  }
+  .plant--line g {
+    stroke-width: 1.4px;
+    vector-effect: non-scaling-stroke;
+  }
+  .plant--line path {
+    vector-effect: non-scaling-stroke;
+  }
+  .nodes {
+    fill: currentColor;
+  }
+  .plant--accent .nodes {
+    fill: var(--cable);
+  }
+</style>

@@ -3,14 +3,29 @@
  * Home hero: 3x3 hairline grid. Doubles as the page banner (logo, nav, theme)
  * and holds the h1. Cells marked .e are empty spacers hidden on small screens.
  */
+import { cv, cvPage, currentRole } from '../data/cv';
 import { site } from '../data/site';
+import Actions from './Actions.astro';
+import Link from './Link.astro';
+import AsciiPortrait from './AsciiPortrait.astro';
 import Nav from './Nav.astro';
+import PlantBuild from './PlantBuild.astro';
+import PlantMark from './PlantMark.astro';
 import ThemeToggle from './ThemeToggle.astro';
+
+/** What the work covers, as a compact spec row under the pitch. */
+const scope = [
+  { term: 'DOMAIN', text: 'Modeling, shared language' },
+  { term: 'BOUNDARIES', text: 'Clean, hexagonal' },
+  { term: 'QUALITY', text: 'Testing strategy' },
+  { term: 'INTERFACE', text: 'Design systems' },
+];
 ---
 
 <header class="hero">
+  <AsciiPortrait />
   <div class="cell r b tl display">
-    <a href="#top" id="top" class="brand">{site.domain}</a>
+    <a href="#top" id="top" class="brand"><PlantMark size={22} />{site.domain}</a>
   </div>
   <div class="cell e r b"></div>
   <div class="cell b tr display">
@@ -21,16 +36,37 @@ import ThemeToggle from './ThemeToggle.astro';
   <div class="cell e r b"></div>
   <div class="cell c r b center">
     <div class="intro display">
-      <svg class="layers" width="52" height="52" viewBox="0 0 52 52" aria-hidden="true">
-        <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 4.6">
-          <path d="M26 6 L46 16 L26 26 L6 16 Z"></path>
-          <path d="M6 25 L26 35 L46 25"></path>
-          <path d="M6 34 L26 44 L46 34"></path>
-        </g>
-      </svg>
+      <PlantBuild class="sprout" size={56} />
       <p class="pitch">
         <span class="ink">I build <del>features</del> systems</span>{' '}
         <span class="mute">that stay clear, tested and easy to change, from the domain model to the interface.</span>
+      </p>
+      <p class="lead">
+        {currentRole ? `${currentRole.title} at ${currentRole.organization}, ` : ''}focused on software architecture: I help
+        teams name the domain, draw the boundaries that keep the core free of frameworks, and set the testing and
+        design-system practices that let the code keep pace with the business.
+      </p>
+      <dl class="scope">
+        {scope.map((row) => (
+          <div>
+            <dt>{row.term}</dt>
+            <dd>{row.text}</dd>
+          </div>
+        ))}
+      </dl>
+      <Actions
+        class="hero-actions"
+        label="Main actions"
+        actions={[
+          { label: 'View work', href: '#work', variant: 'tube' },
+          cv,
+          { label: 'Email me', href: site.email },
+        ]}
+      />
+      <p class="elsewhere">
+        <Link href={site.github} rel="me">GITHUB {site.githubLabel}</Link>
+        <Link href={site.linkedin} rel="me">LINKEDIN</Link>
+        <Link href={cvPage}>CV (WEB)</Link>
       </p>
       <h1 class="name"><span class="caret" aria-hidden="true"></span>{site.name} — {site.role}</h1>
     </div>
@@ -53,13 +89,16 @@ import ThemeToggle from './ThemeToggle.astro';
   .hero {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 1.4fr 1fr;
-    grid-template-rows: 1fr 1.5fr 1fr;
-    height: 100vh;
-    height: 100svh;
-    min-height: 640px;
+    /* The right column is wider: the face sits there, beside the slab. */
+    grid-template-columns: 0.7fr 1.3fr 1.2fr;
+    grid-template-rows: minmax(88px, 1fr) auto minmax(88px, 1fr);
+    min-height: max(640px, 100vh);
+    min-height: max(640px, 100svh);
+    overflow: hidden;
   }
   .cell {
+    position: relative;
+    z-index: 1;
     min-width: 0;
   }
   .r {
@@ -75,9 +114,12 @@ import ThemeToggle from './ThemeToggle.astro';
   .brand {
     display: inline-flex;
     align-items: center;
+    gap: 10px;
     min-height: 44px;
   }
   .tr {
+    /* Above the slab, so the phone menu panel drops over it. */
+    z-index: 3;
     padding: 14px 20px;
     display: flex;
     flex-wrap: wrap;
@@ -86,23 +128,27 @@ import ThemeToggle from './ThemeToggle.astro';
     gap: 4px 22px;
     font-size: 15px;
   }
+  /*
+   * Frosted centre slab: the portrait sits behind it, so the face reads as a
+   * blurred presence under the copy and as crisp glyphs around its edges.
+   */
   .center {
     display: flex;
     align-items: center;
     padding: 40px var(--gutter);
     background: var(--frost);
-    backdrop-filter: blur(14px) saturate(0.7);
     -webkit-backdrop-filter: blur(14px) saturate(0.7);
+    backdrop-filter: blur(14px) saturate(0.7);
   }
   .intro {
-    max-width: 400px;
+    width: 100%;
+    max-width: 520px;
     font-size: 19px;
     line-height: 1.45;
     letter-spacing: 0.04em;
   }
-  .layers {
-    display: block;
-    margin-bottom: 36px;
+  .intro :global(.sprout) {
+    margin: 0 0 26px -6px;
     color: var(--mute);
   }
   .pitch {
@@ -119,8 +165,66 @@ import ThemeToggle from './ThemeToggle.astro';
     color: var(--mute);
     text-decoration-thickness: 1px;
   }
+  .lead {
+    max-width: 46ch;
+    margin: 20px 0 0;
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.65;
+    letter-spacing: 0.01em;
+    color: var(--mute);
+  }
+  /* Compact spec row: four hairline cells, label over value. */
+  .scope {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 24px 0 0;
+    border-top: 1px solid var(--line-strong);
+  }
+  .scope div {
+    padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .scope div:nth-child(odd) {
+    border-right: 1px solid var(--line);
+  }
+  .scope div:nth-child(even) {
+    padding-left: 14px;
+  }
+  .scope dt {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+  }
+  .scope dd {
+    margin: 4px 0 0;
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+  }
+  .intro :global(.hero-actions) {
+    margin-top: 30px;
+  }
+  .elsewhere {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+    margin: 18px 0 0;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .elsewhere a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .elsewhere a:hover {
+    color: var(--ink);
+  }
   .name {
-    margin: 72px 0 0;
+    margin: 22px 0 0;
     font-weight: 400;
     font-size: 15px;
     letter-spacing: 0.06em;
@@ -151,6 +255,7 @@ import ThemeToggle from './ThemeToggle.astro';
   .chip {
     padding: 4px 8px;
     background: var(--veil);
+    text-transform: uppercase;
   }
   .scroll.chip {
     margin-left: -8px;
@@ -171,12 +276,47 @@ import ThemeToggle from './ThemeToggle.astro';
       grid-column: 1 / -1;
       border-right: 0;
     }
+    /*
+     * Phones: the face stays clear at the top (the hero may grow past the
+     * fold for it); the slab hugs the copy and starts under the eyes.
+     */
+    .hero {
+      height: auto;
+      min-height: 100vh;
+      min-height: 100svh;
+    }
+    .center {
+      align-items: flex-end;
+      padding: 58vw 16px 16px;
+      background: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .intro {
+      font-size: 17px;
+      padding: 22px 20px 8px;
+      border: 1px solid var(--line-strong);
+      background: var(--frost);
+      -webkit-backdrop-filter: blur(14px) saturate(0.7);
+      backdrop-filter: blur(14px) saturate(0.7);
+    }
     .tl,
     .tr {
       padding: 8px 16px;
     }
+    /* One row on phones: brand, the MENU disclosure and an icon theme toggle. */
+    .tr {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .tl {
+      display: flex;
+      align-items: center;
+    }
     .bl {
       padding: 16px;
     }
+
   }
 </style>

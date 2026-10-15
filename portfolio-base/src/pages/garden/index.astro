@@ -19,7 +19,7 @@ const date = new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', da
           <h2 id={`stage-${group.stage}`} class="stage">
             {group.stage} · {group.items.length}
           </h2>
-          <ul class="notes frost-card">
+          <ul class="notes slab">
             {group.items.map((note) => (
               <li>
                 <a href={noteHref(note)}>

@@ -1,6 +1,6 @@
 # yebt.dev — Grid Console
 
-Portfolio of Yahir Eduardo Bravo, software architect. Astro 7, static output, no UI framework.
+Portfolio of Yahir Eduardo Bravo, Lead Developer focused on software architecture. Astro 7, static output, no UI framework.
 
 ## Commands
 
@@ -11,6 +11,20 @@ Portfolio of Yahir Eduardo Bravo, software architect. Astro 7, static output, no
 | `npm run build`   | Build the static site to `./dist/`      |
 | `npm run preview` | Preview the build                       |
 | `npm test`        | Run unit tests (Vitest)                 |
+| `npm run og`      | Render the social card to `public/og.png` |
+| `npm run cv:pdf`  | Print `/cv` to `public/cv.pdf`          |
+
+## Deployment: `SITE_URL`
+
+Set `SITE_URL` to the public origin (absolute `http(s)` URL, e.g. `https://yebt.dev`) in the host's build
+environment or in a local `.env` (see `.env.example`; `.env` files are gitignored). `astro.config.mjs`
+validates it and uses it as `site`, so canonical and `og:image` URLs are absolute. Without it the build still
+works, prints one warning and keeps those URLs relative, which most social previews ignore.
+
+`npm run og` renders `public/og.png` (1200 × 630) from `scripts/build-og.mjs` with headless Chrome (set
+`CHROME_PATH` if it is not in a standard location; Node >= 22.18 to load the plant mark from TypeScript). The
+card shows the domain from `SITE_URL`, falling back to `yebt.dev`. Rerun it and commit the PNG after changing
+the name, the headline or the domain.
 
 ## Structure
 

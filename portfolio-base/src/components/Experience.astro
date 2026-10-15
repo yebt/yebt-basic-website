@@ -1,0 +1,245 @@
+---
+/**
+ * Home experience module: a measured time strip (decorative, aria-hidden)
+ * above the real timeline list, both computed from `src/data/cv.ts`.
+ */
+import SectionHeader from './SectionHeader.astro';
+import { asOf, basics, currentRole, cvPage, experienceYears, roles } from '../data/cv';
+import { formatYearMonth, monthIndex, toYearMonth } from '../lib/cv';
+
+/** Short labels for the strip, where the full title would not fit. */
+const short: Record<string, string> = {
+  'Lead Developer': 'LEAD DEV',
+  'Junior Developer': 'JUNIOR DEV',
+};
+
+const now = toYearMonth(asOf);
+const firstYear = Math.min(...roles.map((role) => Number(role.start.slice(0, 4))));
+const lastYear = asOf.getUTCFullYear() + 1;
+const from = monthIndex(`${firstYear}-01`);
+const span = monthIndex(`${lastYear}-01`) - from;
+const pct = (index: number) => `${((index - from) / span) * 100}%`;
+const years = Array.from({ length: lastYear - firstYear }, (_, i) => firstYear + i);
+const bars = [...roles].reverse().map((role) => ({
+  label: short[role.title] ?? 'TUTOR',
+  left: pct(monthIndex(role.start)),
+  width: `${((monthIndex(role.end ?? now) + 1 - monthIndex(role.start)) / span) * 100}%`,
+  current: !role.end,
+}));
+const nowAt = pct(monthIndex(now) + 1);
+---
+
+<section id="experience" class="panel experience" aria-labelledby="experience-title">
+  <SectionHeader id="experience-title" title="Experience" href={cvPage} linkLabel="FULL CV" />
+  <p class="lead">
+    <strong>{experienceYears}</strong> of professional software experience.{' '}
+    {currentRole && `${currentRole.title} at ${currentRole.organization} since ${formatYearMonth(currentRole.start)}. `}
+    {basics.target}.
+  </p>
+
+  <div class="strip" aria-hidden="true">
+    <div class="tracks">
+      {
+        bars.map((bar) => (
+          <div class="track">
+            <span class:list={['bar', { current: bar.current }]} style={`left:${bar.left};width:${bar.width}`}>
+              <span class="bar-label">{bar.label}</span>
+            </span>
+          </div>
+        ))
+      }
+      <span class="now" style={`left:${nowAt}`}><span>NOW</span></span>
+    </div>
+    <div class="ticks">
+      {years.map((year) => <span style={`left:${pct(monthIndex(`${year}-01`))}`}>{year}</span>)}
+    </div>
+  </div>
+
+  <ol class="timeline">
+    {
+      roles.map((role) => (
+        <li class:list={['stop', { current: !role.end }]}>
+          <p class="when">
+            <span>{role.range}</span>
+            <span class="duration">{role.duration}</span>
+          </p>
+          <div class="what">
+            <h3>{role.title}</h3>
+            <p class="org">{role.organization}</p>
+            <ul>
+              {role.featured.map((i) => (
+                <li>{role.highlights[i]}</li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  .lead {
+    max-width: 62ch;
+    margin: -16px 0 44px;
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--mute);
+  }
+  .lead strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* Time strip: one track per role on a year scale, with a NOW datum. */
+  .strip {
+    margin-bottom: 48px;
+    font-family: var(--font-display);
+    font-size: 12px;
+  }
+  .tracks {
+    position: relative;
+    padding: 14px 0 6px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .track {
+    position: relative;
+    height: 26px;
+  }
+  .bar {
+    position: absolute;
+    top: 9px;
+    height: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--slab);
+  }
+  .bar.current {
+    border-color: var(--cable);
+    background: color-mix(in srgb, var(--cable) 22%, transparent);
+  }
+  .bar-label {
+    position: absolute;
+    bottom: 11px;
+    left: 0;
+    white-space: nowrap;
+    color: var(--mute);
+    letter-spacing: 0.06em;
+  }
+  .current .bar-label {
+    color: var(--ink);
+  }
+  .now {
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    width: 1px;
+    background: var(--cable);
+  }
+  .now span {
+    position: absolute;
+    top: -6px;
+    right: 6px;
+    color: var(--cable);
+    letter-spacing: 0.08em;
+  }
+  .ticks {
+    position: relative;
+    height: 22px;
+  }
+  .ticks span {
+    position: absolute;
+    top: 0;
+    padding: 6px 0 0 5px;
+    border-left: 1px solid var(--line-strong);
+    color: var(--mute);
+  }
+
+  /* Timeline list */
+  .timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .stop {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 8px 32px;
+    padding: 26px 0;
+    border-top: 1px solid var(--line);
+  }
+  .when {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 14px;
+  }
+  .duration {
+    color: var(--mute);
+  }
+  .what {
+    position: relative;
+    padding-left: 28px;
+    border-left: 1px solid var(--line-strong);
+  }
+  /* Datum on the rail; the current role's is the orange one. */
+  .what::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: -5px;
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+  }
+  .current .what::before {
+    border-color: var(--cable);
+    background: var(--cable);
+  }
+  .what h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
+  .org {
+    margin: 4px 0 0;
+    color: var(--mute);
+  }
+  .what ul {
+    max-width: 68ch;
+    margin: 14px 0 0;
+    padding-left: 1.1em;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .what li + li {
+    margin-top: 6px;
+  }
+  .what li::marker {
+    color: var(--mute);
+  }
+
+  @media (max-width: 820px) {
+    .stop {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .when {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 4px 12px;
+    }
+  }
+  @media (max-width: 520px) {
+    .strip {
+      font-size: 11px;
+    }
+    .ticks span:nth-child(even) {
+      color: transparent;
+    }
+  }
+</style>

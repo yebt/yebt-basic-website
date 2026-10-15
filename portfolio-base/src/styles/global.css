@@ -1,56 +1,125 @@
 /*
- * Grid Console design tokens.
+ * Grid Console design tokens, industrial pass: raw concrete greys, galvanized
+ * steel, one safety-orange cable accent and a fluorescent-tube white.
  * Dark is the default; light applies via [data-theme="light"] (set by the
  * no-flash script) or, without JS, via prefers-color-scheme.
  */
 :root {
   color-scheme: dark;
-  --bg: #0b0c0b;
+  --bg: #151615;
   --ink: #ecece6;
-  --mute: #8f928c;
+  --mute: #9b9e98;
   --line: rgba(236, 236, 230, 0.1);
   --line-strong: rgba(236, 236, 230, 0.2);
-  --card: rgba(16, 17, 16, 0.46);
-  --frost: rgba(11, 12, 11, 0.38);
-  --veil: rgba(11, 12, 11, 0.74);
+  --slab: rgba(236, 236, 230, 0.028);
+  --frost: rgba(21, 22, 21, 0.55);
+  --veil: rgba(21, 22, 21, 0.76);
   --dot: rgba(236, 236, 230, 0.16);
   --grain: 0.22;
   --grain-blend: overlay;
+  /* Concrete: coarse blotches and air-pocket specks over the base grey. */
+  --concrete: 0.42;
+  --concrete-blend: soft-light;
+  --specks: 0.55;
+  /* Industrial accents: galvanized steel, safety-orange cable, fluorescent tube. */
+  --steel: #7f878e;
+  --steel-hi: #b9c0c6;
+  --steel-lo: #4b5157;
+  --cable: #ff6a1f;
+  --cable-lo: #b8460c;
+  --tube: #f1f6ff;
+  --tube-ink: #101214;
+  --tube-glow: rgba(190, 218, 255, 0.5);
+  --tube-haze: rgba(170, 205, 255, 0.16);
+  --tube-off: #8a9097;
+  /* Dark recess of an aluminium profile slot or a bolt hole. */
+  --slot: #0b0c0c;
+  /* Frosted acrylic modules: tint, inner light and the polished top edge. */
+  --acrylic: rgba(27, 28, 27, 0.58);
+  --acrylic-light: rgba(236, 236, 230, 0.055);
+  --acrylic-edge: rgba(255, 255, 255, 0.06);
+  --module-shadow: rgba(0, 0, 0, 0.55);
+  --portrait-opacity: 0.7;
+  /* Blueprint construction lines (hero mark animation). */
+  --blueprint: #7ea6dc;
 
   --font-display: 'Share Tech Mono', ui-monospace, monospace;
   --font-body: 'Geist Mono', ui-monospace, monospace;
   --gutter: clamp(20px, 4vw, 48px);
+  /* Module frame: inset from the viewport edge, gap between modules, cube size. */
+  --module-inset: clamp(12px, 2.4vw, 32px);
+  --module-gap: clamp(28px, 4vw, 48px);
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #e5e4df;
+  --bg: #d9d8d3;
   --ink: #121312;
-  --mute: #4c504b;
-  --line: rgba(18, 19, 18, 0.12);
-  --line-strong: rgba(18, 19, 18, 0.24);
-  --card: rgba(236, 235, 230, 0.52);
-  --frost: rgba(229, 228, 223, 0.48);
-  --veil: rgba(229, 228, 223, 0.8);
+  --mute: #464a45;
+  --line: rgba(18, 19, 18, 0.13);
+  --line-strong: rgba(18, 19, 18, 0.26);
+  --slab: rgba(255, 255, 252, 0.22);
+  --frost: rgba(217, 216, 211, 0.6);
+  --veil: rgba(217, 216, 211, 0.82);
   --dot: rgba(18, 19, 18, 0.18);
   --grain: 0.3;
   --grain-blend: multiply;
+  --concrete: 0.24;
+  --concrete-blend: multiply;
+  --specks: 0.4;
+  --steel: #7a8188;
+  --steel-hi: #c9ced3;
+  --steel-lo: #555b61;
+  --cable: #e85a12;
+  --cable-lo: #a83f08;
+  --tube: #fbfdff;
+  --tube-ink: #101214;
+  --tube-glow: rgba(150, 190, 255, 0.55);
+  --tube-haze: rgba(150, 190, 255, 0.18);
+  --tube-off: #b7bcc2;
+  --slot: #34383c;
+  --acrylic: rgba(238, 237, 232, 0.56);
+  --acrylic-light: rgba(255, 255, 255, 0.55);
+  --acrylic-edge: rgba(255, 255, 255, 0.7);
+  --module-shadow: rgba(40, 38, 32, 0.22);
+  --portrait-opacity: 0.72;
+  --blueprint: #2c5a98;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
-    --bg: #e5e4df;
+    --bg: #d9d8d3;
     --ink: #121312;
-    --mute: #4c504b;
-    --line: rgba(18, 19, 18, 0.12);
-    --line-strong: rgba(18, 19, 18, 0.24);
-    --card: rgba(236, 235, 230, 0.52);
-    --frost: rgba(229, 228, 223, 0.48);
-    --veil: rgba(229, 228, 223, 0.8);
+    --mute: #464a45;
+    --line: rgba(18, 19, 18, 0.13);
+    --line-strong: rgba(18, 19, 18, 0.26);
+    --slab: rgba(255, 255, 252, 0.22);
+    --frost: rgba(217, 216, 211, 0.6);
+    --veil: rgba(217, 216, 211, 0.82);
     --dot: rgba(18, 19, 18, 0.18);
     --grain: 0.3;
     --grain-blend: multiply;
+    --concrete: 0.24;
+    --concrete-blend: multiply;
+    --specks: 0.4;
+    --steel: #7a8188;
+    --steel-hi: #c9ced3;
+    --steel-lo: #555b61;
+    --cable: #e85a12;
+    --cable-lo: #a83f08;
+    --tube: #fbfdff;
+    --tube-ink: #101214;
+    --tube-glow: rgba(150, 190, 255, 0.55);
+    --tube-haze: rgba(150, 190, 255, 0.18);
+    --tube-off: #b7bcc2;
+    --slot: #34383c;
+    --acrylic: rgba(238, 237, 232, 0.56);
+    --acrylic-light: rgba(255, 255, 255, 0.55);
+    --acrylic-edge: rgba(255, 255, 255, 0.7);
+    --module-shadow: rgba(40, 38, 32, 0.22);
+    --portrait-opacity: 0.72;
+    --blueprint: #2c5a98;
   }
 }
 
@@ -77,6 +146,30 @@ body {
   overflow-x: hidden;
 }
 
+/*
+ * Raw concrete under everything: coarse pour blotches (soft-light / multiply)
+ * plus sparse air-pocket specks. Fixed, so it reads as the room, not the page.
+ */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+body::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='720'%3E%3Cfilter id='c' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.019' numOctaves='5' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 1.9 0 0 0 -0.62'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23c)'/%3E%3C/svg%3E");
+  background-size: 720px 720px;
+  opacity: var(--concrete);
+  mix-blend-mode: var(--concrete-blend);
+}
+body::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='s' x='0' y='0' width='100%' height='100%'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.55' numOctaves='1' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.06 0 0 0 0 0.06 0 0 0 14 -10.4'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23s)'/%3E%3C/svg%3E");
+  background-size: 260px 260px;
+  opacity: var(--specks);
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -84,6 +177,20 @@ a {
 a:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+/* New-tab links carry a small drawn arrow; the words are in a visually hidden hint. */
+a[target='_blank']:not(.tube)::after {
+  content: '';
+  display: inline-block;
+  flex: none;
+  width: 0.62em;
+  height: 0.62em;
+  margin-left: 0.4em;
+  vertical-align: 0.05em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 8 8 2M3.5 2H8v4.5' fill='none' stroke='%23000' stroke-width='1.3'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 8 8 2M3.5 2H8v4.5' fill='none' stroke='%23000' stroke-width='1.3'/%3E%3C/svg%3E") center / contain no-repeat;
+  opacity: 0.8;
 }
 button {
   font: inherit;
@@ -170,12 +277,100 @@ iframe {
   border-color: var(--ink);
 }
 
-/* Section frame shared by home sections and inner pages */
+/*
+ * Fluorescent tube: the one primary action per view. Cool white body between
+ * two steel end caps, a soft glow, and a one-time flicker-on at load.
+ */
+.tube {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0 7px;
+  padding: 0 22px;
+  background: var(--tube);
+  color: var(--tube-ink);
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 0 14px 1px var(--tube-glow),
+    0 0 52px 10px var(--tube-haze);
+  transition: box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: tube-on 1.3s steps(1, end) 0.6s both;
+}
+.tube::before,
+.tube::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 7px;
+  background: var(--steel);
+  border: 1px solid var(--steel-lo);
+}
+.tube::before {
+  left: -7px;
+}
+.tube::after {
+  right: -7px;
+}
+.tube:hover {
+  text-decoration: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 0 18px 3px var(--tube-glow),
+    0 0 72px 16px var(--tube-haze);
+}
+.tube:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 7px;
+}
+@keyframes tube-on {
+  0%,
+  9%,
+  17%,
+  31% {
+    background-color: var(--tube-off);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+  6%,
+  13%,
+  24%,
+  40%,
+  100% {
+    background-color: var(--tube);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+      0 0 14px 1px var(--tube-glow),
+      0 0 52px 10px var(--tube-haze);
+  }
+}
+
+/*
+ * Modules: every section (home) or page body (inner pages) is a frosted
+ * acrylic panel over the concrete, with an inner light from the top and a
+ * polished top edge. Modules stand apart, separated only by the gap.
+ */
 .panel {
   position: relative;
-  background: var(--veil);
-  border-top: 1px solid var(--line);
-  padding: 88px var(--gutter);
+  margin-inline: var(--module-inset);
+  padding: clamp(36px, 6vw, 80px) var(--gutter);
+  border: 1px solid var(--line-strong);
+  background:
+    radial-gradient(120% 70% at 50% 0%, var(--acrylic-light), transparent 70%),
+    var(--acrylic);
+  box-shadow:
+    inset 0 1px 0 var(--acrylic-edge),
+    0 16px 32px -24px var(--module-shadow);
+  -webkit-backdrop-filter: blur(10px) saturate(0.85);
+  backdrop-filter: blur(10px) saturate(0.85);
+}
+main.panel {
+  margin-block: var(--module-gap);
 }
 .panel h2 {
   margin: 0;
@@ -187,24 +382,25 @@ iframe {
   text-wrap: balance;
 }
 
-.frost-card {
+/* Poured slab: a slightly lifted concrete panel with a hairline edge. No glass. */
+.slab {
   border: 1px solid var(--line-strong);
-  background: var(--card);
-  backdrop-filter: blur(32px) saturate(0.6);
-  -webkit-backdrop-filter: blur(32px) saturate(0.6);
+  background: var(--slab);
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .caret {
+  .caret,
+  .tube {
     animation: none;
   }
 }
 
 /* Rendered Markdown (project bodies, garden notes) */
 .prose {
+  counter-reset: sidenote;
   max-width: 68ch;
   font-size: 16px;
   line-height: 1.7;

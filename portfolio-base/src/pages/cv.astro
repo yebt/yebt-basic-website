@@ -1,0 +1,468 @@
+---
+/**
+ * The CV as a web page: one column of plain, semantic text (h1 name, h2
+ * standard section names, h3 roles, lists for highlights) so applicant
+ * tracking systems and screen readers parse it in reading order. On screen it
+ * sits in the site's acrylic module; in print it is black on white in a
+ * standard sans, and `npm run cv:pdf` prints it to `public/cv.pdf`.
+ */
+import Actions from '../components/Actions.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { asOf, basics, competencies, courses, cv, education, languages, roles, skills, summary } from '../data/cv';
+import { site } from '../data/site';
+import { formatYearMonth, toYearMonth } from '../lib/cv';
+
+/** Visible contact text: hosts and paths without the scheme, as people type them. */
+const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+const contacts = [
+  { label: basics.email, href: site.email },
+  { label: bare(basics.linkedin), href: basics.linkedin },
+  { label: bare(basics.github), href: basics.github },
+  { label: bare(basics.website), href: basics.website },
+];
+const updated = formatYearMonth(toYearMonth(asOf));
+const year = (ym: string) => ym.slice(0, 4);
+---
+
+<BaseLayout
+  title="CV — Yahir Eduardo Bravo Tafur"
+  description={`CV of Yahir Eduardo Bravo Tafur, ${basics.headline}. ${basics.target}.`}
+>
+  <main id="main" class="panel cv">
+    <div class="cv-tools">
+      <p class="updated">CV · UPDATED {updated.toUpperCase()}</p>
+      <Actions
+        label="CV actions"
+        actions={[
+          { ...cv, variant: 'tube' },
+          { label: 'Email me', href: site.email },
+        ]}
+      />
+    </div>
+
+    <article class="sheet">
+      <header class="cv-head">
+        <h1>{basics.name}</h1>
+        <p class="headline">{basics.headline}</p>
+        <p class="contact">
+          <span>{basics.location}</span>
+          {
+            contacts.map((item) => (
+              <>
+                <span class="sep" aria-hidden="true">|</span>
+                <a href={item.href}>{item.label}</a>
+              </>
+            ))
+          }
+        </p>
+        <p class="target">{basics.target}</p>
+      </header>
+
+      <section aria-labelledby="cv-summary">
+        <h2 id="cv-summary">Summary</h2>
+        <p class="summary">{summary}</p>
+      </section>
+
+      <section aria-labelledby="cv-competencies">
+        <h2 id="cv-competencies">Core competencies</h2>
+        <ul class="competencies">
+          {competencies.map((item) => <li>{item}</li>)}
+        </ul>
+      </section>
+
+      <section aria-labelledby="cv-experience">
+        <h2 id="cv-experience">Experience</h2>
+        {
+          roles.map((role) => (
+            <article class="role">
+              <h3>{role.title}</h3>
+              <p class="meta">
+                <span class="org">{role.organization}</span> | {role.location} |{' '}
+                <span class="when">
+                  {role.range}
+                  <span class="dur"> ({role.duration})</span>
+                </span>
+              </p>
+              <p class="scope">{role.scope}</p>
+              <ul>
+                {role.highlights.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))
+        }
+      </section>
+
+      <section aria-labelledby="cv-skills">
+        <h2 id="cv-skills">Skills</h2>
+        <ul class="skills">
+          {
+            skills.map((group) => (
+              <li>
+                <strong>{group.name}:</strong> {group.items.join(', ')}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="cv-education">
+        <h2 id="cv-education">Education</h2>
+        {
+          education.map((item) => (
+            <article class="role">
+              <h3>{item.program}</h3>
+              <p class="meta">
+                <span class="org">{item.institution}</span> | {item.location} |{' '}
+                <span class="when">
+                  {year(item.start)} – {year(item.end)}
+                </span>
+              </p>
+            </article>
+          ))
+        }
+      </section>
+
+      <section aria-labelledby="cv-courses">
+        <h2 id="cv-courses">Courses</h2>
+        <ul class="plain">
+          {
+            courses.map((course) => (
+              <li>
+                {course.name} — {course.provider}, {course.date}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="cv-languages">
+        <h2 id="cv-languages">Languages</h2>
+        <ul class="plain">
+          {
+            languages.map((language) => (
+              <li>
+                {language.name}: {language.level}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .cv {
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+  @media (max-width: 1104px) {
+    .cv {
+      margin-inline: var(--module-inset);
+    }
+  }
+  .cv-tools {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px 24px;
+    padding-bottom: 28px;
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--line);
+  }
+  .updated {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--mute);
+  }
+  .sheet {
+    max-width: 78ch;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .cv-head h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(30px, 4.6vw, 48px);
+    line-height: 1.08;
+    letter-spacing: 0.02em;
+    text-wrap: balance;
+  }
+  .headline {
+    margin: 14px 0 0;
+    font-size: 17px;
+  }
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 10px;
+    margin: 16px 0 0;
+    color: var(--mute);
+    font-size: 14px;
+  }
+  .contact a {
+    overflow-wrap: anywhere;
+  }
+  .contact a:hover {
+    color: var(--ink);
+  }
+  .sep {
+    color: var(--line-strong);
+  }
+  .target {
+    display: inline-block;
+    margin: 18px 0 0;
+    padding: 4px 10px;
+    border: 1px solid var(--cable);
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  section {
+    margin-top: 56px;
+  }
+  .panel section h2 {
+    margin: 0 0 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-strong);
+    font-size: 18px;
+    letter-spacing: 0.08em;
+  }
+  .summary {
+    margin: 0;
+  }
+  .role + .role {
+    margin-top: 36px;
+  }
+  .role h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 21px;
+    letter-spacing: 0.02em;
+  }
+  .meta {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--mute);
+  }
+  .org {
+    color: var(--ink);
+  }
+  .when {
+    white-space: nowrap;
+  }
+  .scope {
+    margin: 12px 0 0;
+  }
+  .role ul,
+  .skills,
+  .plain {
+    margin: 12px 0 0;
+    padding-left: 1.2em;
+  }
+  .role li + li,
+  .skills li + li,
+  .plain li + li {
+    margin-top: 6px;
+  }
+  .role li::marker,
+  .skills li::marker,
+  .plain li::marker {
+    color: var(--cable);
+  }
+  .skills strong {
+    font-weight: 500;
+  }
+  .competencies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .competencies li {
+    padding: 3px 10px;
+    border: 1px solid var(--line-strong);
+    font-size: 13px;
+  }
+
+  @media (max-width: 620px) {
+    .sheet {
+      font-size: 14px;
+    }
+    .when {
+      white-space: normal;
+    }
+    .contact {
+      flex-direction: column;
+    }
+    .sep {
+      display: none;
+    }
+  }
+
+  @media print {
+    .sheet {
+      max-width: none;
+      font-size: 9.6pt;
+      line-height: 1.38;
+    }
+    .cv-head h1 {
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .headline {
+      margin-top: 3pt;
+      font-size: 11pt;
+    }
+    .contact {
+      gap: 0 6pt;
+      margin-top: 4pt;
+      font-size: 9pt;
+    }
+    .target {
+      display: block;
+      margin-top: 3pt;
+      padding: 0;
+      border: 0;
+      font-size: 9pt;
+      font-style: italic;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    section {
+      margin-top: 12pt;
+    }
+    .panel section h2 {
+      margin: 0 0 5pt;
+      padding-bottom: 2pt;
+      border-bottom-width: 0.75pt;
+      font-size: 10.5pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      break-after: avoid;
+    }
+    .role + .role {
+      margin-top: 9pt;
+    }
+    .role h3 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      letter-spacing: 0;
+      break-after: avoid;
+    }
+    .meta {
+      margin-top: 1pt;
+      font-size: 9pt;
+      break-after: avoid;
+    }
+    .scope {
+      margin-top: 3pt;
+    }
+    .role ul,
+    .skills,
+    .plain {
+      margin-top: 3pt;
+      padding-left: 12pt;
+      /* A text bullet, so extracted PDF text keeps one marker per item. */
+      list-style-type: '•  ';
+    }
+    .role li + li,
+    .skills li + li,
+    .plain li + li {
+      margin-top: 1.5pt;
+    }
+    li {
+      break-inside: avoid;
+    }
+    .skills strong {
+      font-weight: 700;
+    }
+    .competencies {
+      display: block;
+    }
+    .competencies li {
+      display: inline;
+      padding: 0;
+      border: 0;
+      font-size: inherit;
+    }
+    /* Commas: the separator keyword parsers split lists on. */
+    .competencies li + li::before {
+      content: ', ';
+    }
+    /* Durations are derived; dates alone keep date parsing unambiguous. */
+    .dur {
+      display: none;
+    }
+    a {
+      text-decoration: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /*
+   * Print (and `npm run cv:pdf`): only the sheet, black on white in a standard
+   * sans, without backgrounds, textures, canvases or site chrome. Letter size;
+   * the margins leave room for A4 printing too. Sheet typography is in the
+   * scoped block above.
+   */
+  @page {
+    size: letter;
+    margin: 14mm 15mm;
+  }
+  @media print {
+    html:root,
+    html:root[data-theme] {
+      --font-display: Arial, Helvetica, 'Liberation Sans', sans-serif;
+      --font-body: var(--font-display);
+      --ink: #000;
+      --mute: #000;
+      --line-strong: #000;
+      --cable: #000;
+      background: #fff;
+      color: #000;
+    }
+    body {
+      background: #fff;
+      color: #000;
+      letter-spacing: 0;
+    }
+    body::before,
+    body::after,
+    .grain,
+    .ambient,
+    .skip-link,
+    .site-header,
+    .footer,
+    .cv-tools {
+      display: none !important;
+    }
+    .page {
+      z-index: auto;
+    }
+    main.cv.panel {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .cv a::after {
+      display: none !important;
+    }
+  }
+</style>

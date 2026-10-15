@@ -1,0 +1,103 @@
+---
+/** "Related" rows at the foot of an entry page: title on the left, facts on the right. */
+interface Item {
+  href: string;
+  title: string;
+  meta: string;
+}
+
+interface Props {
+  title: string;
+  items: Item[];
+}
+
+const { title, items } = Astro.props;
+const id = `related-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+---
+
+{
+  items.length > 0 && (
+    <section class="related" aria-labelledby={id}>
+      <h2 id={id} class="heading">
+        {title}
+      </h2>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.href}>
+              <span class="name">{item.title}</span>
+              <span class="meta">{item.meta}</span>
+              <svg class="arrow" width="16" height="10" viewBox="0 0 16 10" aria-hidden="true">
+                <path d="M0 5h14M10 1l4 4-4 4" fill="none" stroke="currentColor" />
+              </svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .related {
+    margin-top: 56px;
+  }
+  :global(.panel) .heading {
+    margin: 0 0 16px;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    color: var(--mute);
+  }
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line-strong);
+  }
+  li {
+    border-bottom: 1px solid var(--line);
+  }
+  a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 16px;
+    gap: 24px;
+    align-items: baseline;
+    padding: 18px 4px;
+    text-decoration: none;
+  }
+  a:hover {
+    background: var(--slab);
+  }
+  .name {
+    font-size: 16px;
+  }
+  .meta {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .arrow {
+    align-self: center;
+    color: var(--mute);
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  a:hover .arrow {
+    transform: translateX(3px);
+    color: var(--ink);
+  }
+  @media (max-width: 640px) {
+    a {
+      grid-template-columns: minmax(0, 1fr) 16px;
+      gap: 6px 16px;
+    }
+    .meta {
+      grid-row: 2;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arrow {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,74 @@
+---
+/**
+ * The few actions that matter (hero, contact): one fluorescent-tube primary
+ * action and hairline secondary ones, in a row that wraps. Applies the site's
+ * link rules (external resources open in a new tab and say so).
+ */
+import { NEW_TAB_HINT, externalAttrs, isExternal } from '../lib/links';
+
+export interface Action {
+  label: string;
+  href: string;
+  /** `tube` is the fluorescent primary action; anything else the hairline secondary one. */
+  variant?: 'tube' | 'line';
+  rel?: string;
+  target?: string;
+  download?: boolean;
+  /** Visually hidden suffix for the accessible name, e.g. "(opens in a new tab)". */
+  hint?: string;
+}
+
+interface Props {
+  actions: Action[];
+  /** Accessible name for the list of actions. */
+  label: string;
+  class?: string;
+}
+
+const { actions, label, class: className } = Astro.props;
+---
+
+<ul class:list={['actions', className]} aria-label={label}>
+  {
+    actions.map((action) => (
+      <li>
+        <a
+          class={action.variant === 'tube' ? 'tube' : 'btn'}
+          href={action.href}
+          download={action.download ? '' : undefined}
+          {...{ target: action.target, ...externalAttrs(action.href, action.rel) }}
+        >
+          {action.label}
+          {(action.hint ?? (isExternal(action.href) ? NEW_TAB_HINT : undefined)) && (
+            <span class="sr-only"> {action.hint ?? NEW_TAB_HINT}</span>
+          )}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li :global(.btn),
+  li :global(.tube) {
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  li :global(.btn) {
+    background-color: var(--veil);
+  }
+  li :global(.tube) {
+    padding: 0 22px;
+  }
+</style>

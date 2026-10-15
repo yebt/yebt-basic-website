@@ -1,5 +1,9 @@
 ---
-/** Primary navigation. On the home page the links are in-page anchors. */
+/**
+ * Primary navigation. On the home page the links are in-page anchors.
+ * Up to 820px wide the links fold into a MENU disclosure so the top bar stays
+ * one row. Without JS (no `js` class on <html>) the links simply stay visible.
+ */
 interface Props {
   home?: boolean;
 }
@@ -13,8 +17,12 @@ const links = [
 ];
 ---
 
-<nav aria-label="Primary">
-  <ul>
+<nav class="nav" aria-label="Primary" data-nav>
+  <button type="button" class="menu" aria-expanded="false" aria-controls="primary-links" data-nav-toggle>
+    <svg width="16" height="10" viewBox="0 0 16 10" aria-hidden="true"><path d="M0 1.5h16M0 8.5h16" stroke="currentColor"></path></svg>
+    MENU
+  </button>
+  <ul id="primary-links">
     {
       links.map((link) => (
         <li>
@@ -28,6 +36,9 @@ const links = [
 </nav>
 
 <style>
+  .nav {
+    position: relative;
+  }
   ul {
     display: flex;
     flex-wrap: wrap;
@@ -46,4 +57,74 @@ const links = [
     text-decoration: underline;
     text-underline-offset: 4px;
   }
+  .menu {
+    display: none;
+  }
+
+  @media (max-width: 820px) {
+    :global(html.js) .menu {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 0 12px;
+      background: var(--veil);
+      border: 1px solid var(--line-strong);
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: 0.06em;
+    }
+    :global(html.js) .menu[aria-expanded='true'] {
+      border-color: var(--ink);
+    }
+    /* Folded links: a frosted drop-down panel under the top bar. */
+    :global(html.js) ul {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 20;
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      min-width: 200px;
+      padding: 6px 0;
+      border: 1px solid var(--line-strong);
+      background: var(--veil);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+    :global(html.js) .nav[data-open] ul {
+      display: flex;
+    }
+    :global(html.js) li + li {
+      border-top: 1px solid var(--line);
+    }
+    :global(html.js) a {
+      display: flex;
+      min-height: 48px;
+      padding: 0 18px;
+    }
+  }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-nav]').forEach((nav) => {
+    const toggle = nav.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+    if (!toggle) return;
+    const set = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      nav.toggleAttribute('data-open', open);
+    };
+    toggle.addEventListener('click', () => set(toggle.getAttribute('aria-expanded') !== 'true'));
+    nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => set(false)));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && nav.hasAttribute('data-open')) {
+        set(false);
+        toggle.focus();
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (nav.hasAttribute('data-open') && !nav.contains(event.target as Node)) set(false);
+    });
+  });
+</script>

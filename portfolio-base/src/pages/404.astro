@@ -1,0 +1,135 @@
+---
+/**
+ * Not found. Same room as every inner page (header, ambient field, one frosted
+ * module): the plant mark drawn from its blueprint, a plain statement of what
+ * happened and the ways back into the site.
+ */
+import Actions from '../components/Actions.astro';
+import PlantBuild from '../components/PlantBuild.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout
+  title={`Not found — ${site.domain}`}
+  description="This address does not point to a page on the site."
+  noindex
+>
+  <main id="main" class="panel lost">
+    <div class="mark">
+      <PlantBuild size={132} />
+    </div>
+    <div class="copy">
+      <h1>404 — Not found</h1>
+      <p class="line">This part of the system was never built.</p>
+      <p class="detail">
+        The address points to a module that does not exist, or one that has moved. The drawing is still on the board; the
+        rest of the site is where you left it.
+      </p>
+      <p class="path" hidden data-missing-path>
+        <span class="path-term">Requested</span>
+        <code data-missing-value></code>
+      </p>
+      <Actions
+        label="Ways back"
+        actions={[
+          { label: 'Home', href: '/', variant: 'tube' },
+          { label: 'Projects', href: '/projects/' },
+          { label: 'Garden', href: '/garden/' },
+          { label: 'Email', href: site.email },
+        ]}
+      />
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  // Echo the requested path as plain text (never as markup).
+  const row = document.querySelector<HTMLElement>('[data-missing-path]');
+  const value = document.querySelector<HTMLElement>('[data-missing-value]');
+  const path = decodeURIComponent(location.pathname);
+  if (row && value && path !== '/404' && path !== '/404.html') {
+    value.textContent = path;
+    row.hidden = false;
+  }
+</script>
+
+<style>
+  .lost {
+    display: grid;
+    gap: clamp(28px, 5vw, 56px);
+    align-items: center;
+    min-height: min(68vh, 640px);
+  }
+  .mark {
+    display: grid;
+    place-items: center;
+    justify-self: start;
+    padding: 20px;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(var(--line), var(--line)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat;
+  }
+  .copy {
+    display: grid;
+    gap: 18px;
+    max-width: 58ch;
+  }
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(30px, 5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .line {
+    margin: 0;
+    font-size: clamp(17px, 1.6vw, 20px);
+    line-height: 1.5;
+  }
+  .detail {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--mute);
+  }
+  .path {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    align-items: baseline;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .path[hidden] {
+    display: none;
+  }
+  .path-term {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .path code {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--ink);
+    font-family: var(--font-body);
+    text-decoration: underline 1px var(--cable);
+    text-underline-offset: 4px;
+  }
+  .copy :global(.actions) {
+    margin-top: 10px;
+  }
+  @media (min-width: 820px) {
+    .lost {
+      grid-template-columns: auto minmax(0, 1fr);
+      padding-inline: clamp(40px, 7vw, 120px);
+    }
+  }
+</style>

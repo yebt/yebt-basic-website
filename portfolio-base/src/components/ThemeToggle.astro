@@ -7,13 +7,39 @@
 ---
 
 <button type="button" class="btn theme-toggle" data-theme-toggle>
-  <span class="when-dark">DARK<span class="sr-only"> theme, switch to light</span></span>
-  <span class="when-light">LIGHT<span class="sr-only"> theme, switch to dark</span></span>
+  <svg class="icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+    <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor"></circle>
+    <path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"></path>
+  </svg>
+  <span class="word when-dark">DARK<span class="sr-only"> theme, switch to light</span></span>
+  <span class="word when-light">LIGHT<span class="sr-only"> theme, switch to dark</span></span>
 </button>
 
 <style>
   .theme-toggle {
     min-width: 72px;
+  }
+  .icon {
+    display: none;
+  }
+  /* Phones: icon-sized; the word stays as the accessible name. */
+  @media (max-width: 820px) {
+    .theme-toggle {
+      min-width: 44px;
+      width: 44px;
+      padding: 0;
+    }
+    .icon {
+      display: block;
+    }
+    .word {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
   }
   .when-light {
     display: none;

@@ -1,0 +1,124 @@
+# Content
+
+Projects live in `src/content/projects/`, garden notes in `src/content/garden/`. Each entry is a `.md` file, or `.mdx`
+when it needs images, collages or margin notes. The frontmatter schema is in `src/content.config.ts`.
+
+## Components for MDX
+
+Import them at the top of the `.mdx` file, after the frontmatter. Images are imported too, so Astro can resize them:
+
+```mdx
+import { Callout, Collage, Figure, Sidenote } from '../../components/content';
+import diagram from '../../assets/projects/ledger-core/context-map.png';
+```
+
+Put project images under `src/assets/` (for example `src/assets/projects/<slug>/`). Leave a blank line before and after
+each component.
+
+### `<Figure>`: one image with a caption
+
+```mdx
+<Figure src={diagram} alt="Context map: postings, balances, periods" figure="FIG. 02" caption="Contexts talk through events." />
+```
+
+`wide` lets it span into the side column on wide screens.
+
+### `<Collage>`: several images composed like a print
+
+Cuts placed on a 12 × 9 grid over a dark ground, with solid blocks, guide lines, arcs and tiny size labels.
+
+```mdx
+<Collage
+  layout="tower"
+  figure="FIG. 01"
+  caption="What the reader should look at."
+  images={[
+    { src: a, alt: '…', label: 'CORE' },
+    { src: b, alt: '…', label: 'PORTS' },
+    { src: c, alt: '…' },
+    { src: d, alt: '…' },
+  ]}
+/>
+```
+
+- `layout`: `tower` (4 images), `spread` (3) or `pair` (2). Extra images reuse the preset's slots.
+- Per image, `area="row-start / col-start / row-end / col-end"` (grid lines 1–10 by 1–13) overrides the preset slot.
+- `blocks={['1 / 9 / 4 / 13']}` replaces the preset's dark blocks.
+- `label` names the cut in its tag; without it the tag reads `C-01`, `C-02`, …
+- `wide` spans into the side column on wide screens.
+
+### Gallery: inspecting images
+
+Every `<Collage>` cut and every `<Figure>` image is inspectable automatically; there is nothing to add to the `.mdx`.
+
+- Hover or keyboard focus lifts the piece, outlines it in orange and shows an "Inspect" tag with its name; the other
+  cuts of that collage dim. On touch screens the tag stays visible as a small mark.
+- Click, tap or Enter opens the viewer with all collage cuts and figures of the page, in the order they appear,
+  starting at the one you picked. It shows the figure number, the cut's `label` (or the figure number), the caption,
+  a `02 / 05` counter and thumbnails. Prev/next buttons, ←/→, Home/End and a horizontal swipe step through; `100%`
+  shows the image at full size (scrollable), `Fit` returns. Escape, the close button or a click outside closes it and
+  focus returns to the image you came from.
+- The viewer loads a larger optimized WebP (up to 2400 px wide, never upscaled beyond the original), not the original
+  file. Without JavaScript each image is simply a link to that large WebP.
+- `inspect={false}` on a `<Collage>` or `<Figure>` keeps it static and leaves it out of the gallery.
+- The cut name comes from `label` (fallback `C-01`, `C-02`, …) and the caption from the component's `caption`; write
+  `alt` text that still makes sense on its own, because it becomes part of the link's accessible name.
+
+### `<Sidenote>`: margin note
+
+```mdx
+The paragraph the note comments on.
+
+<Sidenote label="Rule of thumb">
+  If a test of the core needs a container, a port is missing.
+</Sidenote>
+```
+
+Place it between paragraphs. On wide screens it floats into the side column level with the text that follows it; on
+narrow screens it becomes an inline note at that point. Notes are numbered automatically.
+
+### `<Callout>`: highlighted block
+
+```mdx
+<Callout kind="decision" title="Events over shared tables">Why, and the trade-off accepted.</Callout>
+```
+
+`kind`: `note` (default), `decision`, `warning`, `placeholder`.
+
+## Video
+
+Set `video` (a YouTube watch or `youtu.be` URL) in a project's frontmatter: the page shows a thumbnail and loads the
+player only when the visitor presses play. `playlist` renders a link card instead.
+
+## Placeholders
+
+`src/assets/placeholders/*.jpg` are generated textures used by the sample entries (`ledger-core.mdx`,
+`screaming-architecture.mdx`). Replace them with real images and delete the folder when nothing imports it.
+
+## CV
+
+`src/data/cv.ts` is the single source for the CV: basics, summary, experience (month ranges as `YYYY-MM`, no `end`
+while the role is current), skills, education, courses and languages. The `/cv` page, the PDF, the home Experience
+module and the `Person` JSON-LD all read from it, so edit facts there only.
+
+- Durations count the start and the end month (Oct 2024 – Jun 2025 is 9 months), the convention LinkedIn and most CVs
+  use. A current role runs to the month of the build.
+- Years of experience add up the months of the software roles (`software: true`), counting overlapping months once.
+  The figure is whole years rounded down, with a `+` when months are left over (47 months -> "3+ years", 48 ->
+  "4 years"). Teaching is listed but not counted.
+- `featured` picks the 2–3 highlights the home timeline shows for each role.
+
+### Regenerating the PDF
+
+`public/cv.pdf` is printed from the `/cv` page; rerun it whenever the CV data changes:
+
+```sh
+npm run cv:pdf
+```
+
+It builds the site, serves `dist/` on a local port, prints `/cv/` with headless Chrome using the page's print
+stylesheet (Letter, black on white, standard sans) and writes `public/cv.pdf` (also copied into `dist/`). The text stays
+selectable, so applicant tracking systems can parse it; check with `pdftotext public/cv.pdf -`. Chrome is looked up in
+the usual install paths; set `CHROME_PATH` otherwise. `--no-build` reuses an existing `dist/`. Commit the new PDF.
+
+While `public/cv.pdf` exists the site's CV actions download it; without it they fall back to LinkedIn.

@@ -3,14 +3,15 @@
  */
 export const site = {
   name: 'Yahir Eduardo Bravo',
-  role: 'software architect',
+  role: 'lead developer · software architecture',
   domain: 'YEBT.DEV',
-  location: '[CITY]',
-  email: 'mailto:[YOUR EMAIL]',
-  emailLabel: '[YOUR EMAIL]',
+  location: 'Tuluá, Valle del Cauca',
+  email: 'mailto:yahir.eduardo.bravo@gmail.com',
+  emailLabel: 'yahir.eduardo.bravo@gmail.com',
   cv: '/cv.pdf',
-  github: 'https://github.com/[YOUR HANDLE]',
-  linkedin: 'https://www.linkedin.com/in/[YOUR HANDLE]',
+  github: 'https://github.com/yebt',
+  githubLabel: '@yebt',
+  linkedin: 'https://www.linkedin.com/in/yahir-eduardo-bravo-tafur/',
 } as const;
 
 export const practice = [

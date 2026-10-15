@@ -1,0 +1,64 @@
+---
+/**
+ * Callout block for MDX content. `kind`: note (default), decision (a design
+ * decision worth remembering), warning, placeholder (content still to write).
+ */
+interface Props {
+  kind?: 'note' | 'decision' | 'warning' | 'placeholder';
+  title?: string;
+}
+
+const { kind = 'note', title } = Astro.props;
+const names = { note: 'Note', decision: 'Decision', warning: 'Watch out', placeholder: 'Placeholder' };
+---
+
+<div class:list={['callout', `callout--${kind}`]} role="note">
+  <p class="head">
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+      {kind === 'warning' ? <path d="M6 1 11 11H1z M6 5v3" fill="none" stroke="currentColor" /> : kind === 'decision' ? <path d="M1 6.5 4.5 10 11 2" fill="none" stroke="currentColor" /> : <rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" />}
+    </svg>
+    <span>{names[kind]}{title && <span class="title"> · {title}</span>}</span>
+  </p>
+  <div class="body"><slot /></div>
+</div>
+
+<style>
+  .callout {
+    margin: 2em 0;
+    padding: 16px 20px 18px;
+    border: 1px solid var(--line-strong);
+    background: var(--slab);
+  }
+  .callout--placeholder {
+    border-style: dashed;
+    background: transparent;
+    color: var(--mute);
+  }
+  .callout--warning .head {
+    color: var(--cable);
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .title {
+    color: var(--ink);
+  }
+  .body {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .body :global(p) {
+    margin: 0;
+  }
+  .body :global(p + p) {
+    margin-top: 0.7em;
+  }
+</style>
